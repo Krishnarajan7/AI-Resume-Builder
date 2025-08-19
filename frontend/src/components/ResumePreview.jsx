@@ -4,17 +4,20 @@ import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Download, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const ModernTemplate = () => (
+
+const ModernTemplate = ({ data }) => (
   <div className="bg-white p-8 max-w-4xl mx-auto shadow-lg rounded-lg">
     {/* Header */}
     <div className="border-b-2 border-gray-200 pb-6 mb-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">John Doe</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        {data?.personalInfo?.fullName || "John Doe"}
+      </h1>
       <p className="text-lg text-gray-600 mb-4">Senior Software Engineer</p>
       <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-        <span>john@example.com</span>
-        <span>+1 (555) 123-4567</span>
-        <span>New York, NY</span>
-        <span>linkedin.com/in/johndoe</span>
+        <span>{data?.personalInfo?.email || "john@example.com"}</span>
+        {data?.personalInfo?.phone && <span>{data.personalInfo.phone}</span>}
+        {data?.personalInfo?.location && <span>{data.personalInfo.location}</span>}
+        {data?.personalInfo?.linkedin && <span>{data.personalInfo.linkedin}</span>}
       </div>
     </div>
 
@@ -24,10 +27,7 @@ const ModernTemplate = () => (
         Professional Summary
       </h2>
       <p className="text-gray-700 leading-relaxed">
-        Experienced software engineer with 8+ years developing scalable web applications. 
-        Proven track record of leading cross-functional teams and delivering high-impact projects 
-        that improve user experience and drive business growth. Expertise in React, Node.js, 
-        and cloud technologies.
+        {data?.summary || "Experienced software engineer with 8+ years developing scalable web applications. Proven track record of leading cross-functional teams and delivering high-impact projects that improve user experience and drive business growth. Expertise in React, Node.js, and cloud technologies."}
       </p>
     </div>
 
@@ -100,7 +100,7 @@ const ModernTemplate = () => (
   </div>
 );
 
-const MinimalTemplate = () => (
+const MinimalTemplate = ({ data }) => (
   <div className="bg-white p-8 max-w-4xl mx-auto">
     {/* Header */}
     <div className="text-center mb-8">
@@ -145,7 +145,7 @@ const MinimalTemplate = () => (
   </div>
 );
 
-export const ResumePreview = ({ template }) => {
+export const ResumePreview = ({ template, resumeData }) => {
   const { toast } = useToast();
 
   const handleExportPDF = () => {
@@ -165,10 +165,10 @@ export const ResumePreview = ({ template }) => {
   const renderTemplate = () => {
     switch (template) {
       case "minimal":
-        return <MinimalTemplate />;
+        return <MinimalTemplate data={resumeData} />;
       case "modern":
       default:
-        return <ModernTemplate />;
+        return <ModernTemplate data={resumeData} />;
     }
   };
 

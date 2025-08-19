@@ -6,16 +6,33 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
-export const AddEditModal = ({ type, isOpen, onClose, editData }) => {
+
+export const AddEditModal = ({ type, isOpen, onClose, editData, onSave }) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState(editData || {});
 
   const handleSave = () => {
-    // Simulate saving
+    if (!formData || Object.keys(formData).length === 0) {
+      toast({
+        title: "Error",
+        description: "Please fill in at least one field before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const dataToSave = {
+      ...formData,
+      id: editData?.id || Date.now().toString(),
+    };
+
+    onSave(dataToSave);
+    
     toast({
       title: `${editData ? 'Updated' : 'Added'} ${type}`,
       description: `${type} has been ${editData ? 'updated' : 'added'} successfully!`,
     });
+    
     onClose();
     setFormData({});
   };

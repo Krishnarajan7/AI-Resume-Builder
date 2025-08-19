@@ -10,9 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const { toast } = useToast();
-  const [activePanel, setActivePanel] = useState("editor");
-
+  const [activePanel, setActivePanel] = useState<ActivePanel>("editor");
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
+  const [resumeData, setResumeData] = useState({});
 
   const handleShare = () => {
     toast({
@@ -70,12 +70,12 @@ const Index = () => {
         <div className="hidden lg:flex w-full">
           {/* Editor Panel - Left */}
           <div className="w-80 xl:w-96 editor-panel border-r border-border overflow-y-auto flex-shrink-0">
-            <ResumeEditor />
+            <ResumeEditor onDataChange={setResumeData} />
           </div>
 
           {/* Preview Panel - Center */}
           <div className="flex-1 preview-panel overflow-y-auto">
-            <ResumePreview template={selectedTemplate} />
+            <ResumePreview template={selectedTemplate} resumeData={resumeData} />
           </div>
 
           {/* Templates Panel - Right */}
@@ -91,13 +91,13 @@ const Index = () => {
         <div className="lg:hidden w-full pb-16 overflow-x-hidden"> {/* Added padding bottom for mobile nav and prevent horizontal scroll */}
           {activePanel === "editor" && (
             <div className="h-[calc(100vh-73px-64px)] overflow-y-auto">
-              <ResumeEditor />
+              <ResumeEditor onDataChange={setResumeData} />
             </div>
           )}
 
           {activePanel === "preview" && (
             <div className="h-[calc(100vh-73px-64px)] overflow-y-auto">
-              <ResumePreview template={selectedTemplate} />
+              <ResumePreview template={selectedTemplate} resumeData={resumeData} />
             </div>
           )}
 

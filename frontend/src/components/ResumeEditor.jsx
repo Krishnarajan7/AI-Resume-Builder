@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import {
   Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { AddEditModal } from "./AddEditModal";
+import { AddEditModal, ModalType } from "./AddEditModal";
 
 const AIButton = ({ onClick, children }) => (
   <Button 
@@ -35,10 +35,10 @@ const AIButton = ({ onClick, children }) => (
   </Button>
 );
 
-export const ResumeEditor = () => {
+export const ResumeEditor = ({ onDataChange }) => {
   const { toast } = useToast();
   
-  const [modalType, setModalType] = useState(null);
+  const [modalType, setModalType] = useState<ModalType>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   
@@ -68,7 +68,20 @@ export const ResumeEditor = () => {
   const [certifications, setCertifications] = useState([]);
   const [skills, setSkills] = useState([]);
 
-  // Modal handlers
+  React.useEffect(() => {
+    if (onDataChange) {
+      onDataChange({
+        personalInfo,
+        summary,
+        experiences,
+        education,
+        projects,
+        certifications,
+        skills
+      });
+    }
+  }, [personalInfo, summary, experiences, education, projects, certifications, skills, onDataChange]);
+
   const openAddModal = (type) => {
     setModalType(type);
     setEditData(null);
@@ -85,6 +98,45 @@ export const ResumeEditor = () => {
     setModalOpen(false);
     setModalType(null);
     setEditData(null);
+  };
+
+  const handleModalSave = (data) => {
+    switch (modalType) {
+      case 'experience':
+        if (editData) {
+          setExperiences(prev => prev.map(item => item.id === editData.id ? data : item));
+        } else {
+          setExperiences(prev => [...prev, data]);
+        }
+        break;
+      case 'education':
+        if (editData) {
+          setEducation(prev => prev.map(item => item.id === editData.id ? data : item));
+        } else {
+          setEducation(prev => [...prev, data]);
+        }
+        break;
+      case 'project':
+        if (editData) {
+          setProjects(prev => prev.map(item => item.id === editData.id ? data : item));
+        } else {
+          setProjects(prev => [...prev, data]);
+        }
+        break;
+      case 'certification':
+        if (editData) {
+          setCertifications(prev => prev.map(item => item.id === editData.id ? data : item));
+        } else {
+          setCertifications(prev => [...prev, data]);
+        }
+        break;
+      case 'skill':
+        if (data.skillName) {
+          const skillToAdd = `${data.skillName}${data.proficiency ? ` (${data.proficiency})` : ''}`;
+          setSkills(prev => [...prev, skillToAdd]);
+        }
+        break;
+    }
   };
 
   const toggleSection = (section) => {
@@ -123,9 +175,9 @@ export const ResumeEditor = () => {
     const newEdu = {
       id: Date.now().toString(),
       degree: "",
-      school: "",
-      startDate: "",
-      endDate: ""
+      institution: "",
+      startYear: "",
+      endYear: ""
     };
     setEducation(prev => [...prev, newEdu]);
     setOpenSections(prev => ({ ...prev, education: true }));
@@ -138,9 +190,11 @@ export const ResumeEditor = () => {
   const addProject = () => {
     const newProject = {
       id: Date.now().toString(),
-      name: "",
-      description: "",
-      technologies: ""
+      projectName: "",
+      projectDescription: "",
+      technologies: "",
+      startDate: "",
+      endDate: ""
     };
     setProjects(prev => [...prev, newProject]);
     setOpenSections(prev => ({ ...prev, projects: true }));
@@ -153,9 +207,9 @@ export const ResumeEditor = () => {
   const addCertification = () => {
     const newCert = {
       id: Date.now().toString(),
-      name: "",
-      issuer: "",
-      date: ""
+      certName: "",
+      issuingOrg: "",
+      issueDate: ""
     };
     setCertifications(prev => [...prev, newCert]);
     setOpenSections(prev => ({ ...prev, certifications: true }));
@@ -272,9 +326,9 @@ export const ResumeEditor = () => {
       content: (
         <div className="space-y-4">
           <div className="field-group">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+            <div className="flex flex-col gap-2 mb-2">
               <Label htmlFor="summary">Summary</Label>
-              <div className="flex flex-wrap gap-1 sm:gap-2">
+              <div className="flex flex-wrap gap-2 justify-start">
                 <AIButton onClick={() => handleAIAction("fix-grammar", "summary")}>
                   Fix Grammar
                 </AIButton>
@@ -343,8 +397,10 @@ export const ResumeEditor = () => {
                     </div>
                   </div>
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>Job Title: {exp.jobTitle || "Not specified"}</p>
-                    <p>Company: {exp.company || "Not specified"}</p>
+                    <p><span className="font-medium">Job Title:</span> {exp.jobTitle || "Not specified"}</p>
+                    <p><span className="font-medium">Company:</span> {exp.company || "Not specified"}</p>
+                    <p><span className="font-medium">Duration:</span> {exp.startDate || "Not specified"} - {exp.endDate || "Present"}</p>
+                    {exp.description && <p><span className="font-medium">Description:</span> {exp.description}</p>}
                   </div>
                 </Card>
               ))}
@@ -398,8 +454,10 @@ export const ResumeEditor = () => {
                     </div>
                   </div>
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>Degree: {edu.degree || "Not specified"}</p>
-                    <p>School: {edu.school || "Not specified"}</p>
+                    <p><span className="font-medium">Degree:</span> {edu.degree || "Not specified"}</p>
+                    <p><span className="font-medium">School:</span> {edu.institution || "Not specified"}</p>
+                    <p><span className="font-medium">Years:</span> {edu.startYear || "Not specified"} - {edu.endYear || "Not specified"}</p>
+                    {edu.gpa && <p><span className="font-medium">GPA:</span> {edu.gpa}</p>}
                   </div>
                 </Card>
               ))}
@@ -495,8 +553,10 @@ export const ResumeEditor = () => {
                     </div>
                   </div>
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>Project: {project.name || "Not specified"}</p>
-                    <p>Technologies: {project.technologies || "Not specified"}</p>
+                    <p><span className="font-medium">Project:</span> {project.projectName || "Not specified"}</p>
+                    <p><span className="font-medium">Technologies:</span> {project.technologies || "Not specified"}</p>
+                    <p><span className="font-medium">Duration:</span> {project.startDate || "Not specified"} - {project.endDate || "Not specified"}</p>
+                    {project.projectDescription && <p><span className="font-medium">Description:</span> {project.projectDescription}</p>}
                   </div>
                 </Card>
               ))}
@@ -550,8 +610,10 @@ export const ResumeEditor = () => {
                     </div>
                   </div>
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>Certification: {cert.name || "Not specified"}</p>
-                    <p>Issuer: {cert.issuer || "Not specified"}</p>
+                    <p><span className="font-medium">Certification:</span> {cert.certName || "Not specified"}</p>
+                    <p><span className="font-medium">Issuer:</span> {cert.issuingOrg || "Not specified"}</p>
+                    <p><span className="font-medium">Date:</span> {cert.issueDate || "Not specified"}</p>
+                    {cert.credentialId && <p><span className="font-medium">Credential ID:</span> {cert.credentialId}</p>}
                   </div>
                 </Card>
               ))}
@@ -563,13 +625,12 @@ export const ResumeEditor = () => {
   ];
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 overflow-x-hidden">
-      <div className="space-y-2">
-        <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Resume Editor</h2>
-        <p className="text-sm sm:text-base text-muted-foreground">Build your professional resume with AI assistance</p>
+    <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 overflow-x-hidden">
+      <div className="space-y-1 sm:space-y-2">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground">Resume Editor</h2>
+        <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">Build your professional resume with AI assistance</p>
       </div>
 
-      {/* AI Optimization Button */}
       <Button className="w-full ai-button gap-2" onClick={() => handleAIAction("optimize-resume")}>
         <Sparkles className="w-4 h-4" />
         ✨ Optimize Entire Resume
@@ -580,6 +641,7 @@ export const ResumeEditor = () => {
         isOpen={modalOpen}
         onClose={closeModal}
         editData={editData}
+        onSave={handleModalSave}
       />
 
       <div className="space-y-4">
