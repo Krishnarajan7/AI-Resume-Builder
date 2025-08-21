@@ -21,7 +21,7 @@ import {
   Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { AddEditModal, ModalType } from "./AddEditModal";
+import { AddEditModal} from "./AddEditModal";
 
 const AIButton = ({ onClick, children }) => (
   <Button 
@@ -38,7 +38,7 @@ const AIButton = ({ onClick, children }) => (
 export const ResumeEditor = ({ onDataChange }) => {
   const { toast } = useToast();
   
-  const [modalType, setModalType] = useState<ModalType>(null);
+  const [modalType, setModalType] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   
@@ -254,7 +254,7 @@ export const ResumeEditor = ({ onDataChange }) => {
                 id="fullName"
                 value={personalInfo.fullName}
                 onChange={(e) => setPersonalInfo(prev => ({ ...prev, fullName: e.target.value }))}
-                placeholder="John Doe"
+                placeholder="Krish"
                 className="mt-1"
               />
             </div>
@@ -265,7 +265,7 @@ export const ResumeEditor = ({ onDataChange }) => {
                 type="email"
                 value={personalInfo.email}
                 onChange={(e) => setPersonalInfo(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="john@example.com"
+                placeholder="krish@example.com"
                 className="mt-1"
               />
             </div>
@@ -301,7 +301,7 @@ export const ResumeEditor = ({ onDataChange }) => {
                 id="linkedin"
                 value={personalInfo.linkedin}
                 onChange={(e) => setPersonalInfo(prev => ({ ...prev, linkedin: e.target.value }))}
-                placeholder="linkedin.com/in/johndoe"
+                placeholder="linkedin.com/in/Krishnarajan7"
                 className="mt-1"
               />
             </div>
@@ -311,7 +311,7 @@ export const ResumeEditor = ({ onDataChange }) => {
                 id="website"
                 value={personalInfo.website}
                 onChange={(e) => setPersonalInfo(prev => ({ ...prev, website: e.target.value }))}
-                placeholder="johndoe.com"
+                placeholder="sample.com"
                 className="mt-1"
               />
             </div>
@@ -633,7 +633,7 @@ export const ResumeEditor = ({ onDataChange }) => {
 
       <Button className="w-full ai-button gap-2" onClick={() => handleAIAction("optimize-resume")}>
         <Sparkles className="w-4 h-4" />
-        ✨ Optimize Entire Resume
+        Optimize Entire Resume
       </Button>
 
       <AddEditModal 

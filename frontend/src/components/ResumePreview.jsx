@@ -10,11 +10,11 @@ const ModernTemplate = ({ data }) => (
     {/* Header */}
     <div className="border-b-2 border-gray-200 pb-6 mb-6">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">
-        {data?.personalInfo?.fullName || "John Doe"}
+        {data?.personalInfo?.fullName || "Krishnarajan"}
       </h1>
       <p className="text-lg text-gray-600 mb-4">Senior Software Engineer</p>
       <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-        <span>{data?.personalInfo?.email || "john@example.com"}</span>
+        <span>{data?.personalInfo?.email || "sample@example.com"}</span>
         {data?.personalInfo?.phone && <span>{data.personalInfo.phone}</span>}
         {data?.personalInfo?.location && <span>{data.personalInfo.location}</span>}
         {data?.personalInfo?.linkedin && <span>{data.personalInfo.linkedin}</span>}
@@ -104,10 +104,10 @@ const MinimalTemplate = ({ data }) => (
   <div className="bg-white p-8 max-w-4xl mx-auto">
     {/* Header */}
     <div className="text-center mb-8">
-      <h1 className="text-4xl font-light text-gray-900 mb-2">John Doe</h1>
+      <h1 className="text-4xl font-light text-gray-900 mb-2">Krish</h1>
       <p className="text-lg text-gray-600 mb-4">Senior Software Engineer</p>
       <div className="flex justify-center gap-6 text-sm text-gray-600">
-        <span>john@example.com</span>
+        <span>sample@example.com</span>
         <span>+1 (555) 123-4567</span>
         <span>New York, NY</span>
       </div>

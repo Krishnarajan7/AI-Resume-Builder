@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const { toast } = useToast();
-  const [activePanel, setActivePanel] = useState<ActivePanel>("editor");
+  const [activePanel, setActivePanel] = useState("editor");
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
   const [resumeData, setResumeData] = useState({});
 
@@ -33,13 +33,12 @@ const Index = () => {
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-3 lg:px-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Wand2 className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <h1 className="text-xl font-semibold text-foreground">AI Resume Builder</h1>
-            </div>
+          <div className="flex items-center flex-1">
+            <img 
+              src="/images/hire.png" 
+              alt="AI Resume Builder Logo" 
+              className="h-16 w-auto max-w-xs md:max-w-sm lg:max-w-md object-contain rounded-lg"
+            />
           </div>
 
           {/* Desktop Actions */}
