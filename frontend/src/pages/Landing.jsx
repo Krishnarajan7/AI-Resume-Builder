@@ -26,10 +26,11 @@ const Landing = () => {
         <header className="border-b border-border/40">
           <div className="container mx-auto px-4 py-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Wand2 className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <h1 className="text-xl font-semibold">AI Resume Builder</h1>
+            <img 
+              src="/images/hire.png" 
+              alt="AI Resume Builder Logo" 
+              className="h-16 w-auto max-w-xs md:max-w-sm lg:max-w-md object-contain rounded-lg"
+            />
             </div>
             
             <div className="flex items-center gap-3">
@@ -127,7 +128,7 @@ const Landing = () => {
                   <Wand2 className="w-3 h-3 text-primary-foreground" />
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  © 2024 AI Resume Builder. Craft your career story.
+                  © 2025 AI Resume Builder. Craft your career story.
                 </span>
               </div>
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
