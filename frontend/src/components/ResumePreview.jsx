@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ZoomIn, ZoomOut } from "lucide-react";
+import { ZoomIn, ZoomOut, Undo, Redo } from "lucide-react";
 import { useState } from "react";
 
 const ModernTemplate = ({ data }) => (
@@ -144,11 +144,28 @@ const MinimalTemplate = ({ data }) => (
   </div>
 );
 
-export const ResumePreview = ({ template, resumeData, fontFamily, fontSize }) => {
+export const ResumePreview = ({ 
+  template, 
+  resumeData, 
+  fontFamily, 
+  fontSize, 
+  onUndo, 
+  onRedo, 
+  canUndo = false, 
+  canRedo = false 
+}) => {
   const [zoom, setZoom] = useState(1);
 
   const handleZoomIn = () => setZoom((z) => Math.min(1.6, parseFloat((z + 0.1).toFixed(2))));
   const handleZoomOut = () => setZoom((z) => Math.max(0.6, parseFloat((z - 0.1).toFixed(2))));
+  
+  const handleUndo = () => {
+    onUndo?.();
+  };
+  
+  const handleRedo = () => {
+    onRedo?.();
+  };
 
   const renderTemplate = () => {
     switch (template) {
@@ -170,6 +187,25 @@ export const ResumePreview = ({ template, resumeData, fontFamily, fontSize }) =>
         
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1 sm:gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleUndo} 
+              disabled={!canUndo}
+              aria-label="Undo"
+            >
+              <Undo className="w-4 h-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRedo} 
+              disabled={!canRedo}
+              aria-label="Redo"
+            >
+              <Redo className="w-4 h-4" />
+            </Button>
+            <div className="w-px h-4 bg-border mx-1" />
             <Button variant="outline" size="sm" onClick={handleZoomOut} aria-label="Zoom out">
               <ZoomOut className="w-4 h-4" />
             </Button>

@@ -27,14 +27,13 @@ const AIButton = ({ onClick, children }) => (
   <Button 
     size="sm" 
     variant="outline" 
-    className="ai-button-subtle h-7 text-xs gap-1 whitespace-nowrap"
+    className="ai-button-subtle h-7 text-xs gap-1.5 whitespace-nowrap flex-shrink-0"
     onClick={onClick}
   >
-    <Sparkles className="w-3 h-3" />
-    {children}
+    <Sparkles className="w-3 h-3 flex-shrink-0" />
+    <span className="truncate">{children}</span>
   </Button>
 );
-
 
 export const ResumeEditor = ({ onDataChange }) => {
   const { toast } = useToast();
@@ -85,13 +84,13 @@ export const ResumeEditor = ({ onDataChange }) => {
   }, [personalInfo, summary, experiences, education, projects, certifications, skills, onDataChange]);
 
   // Modal handlers
-  const openAddModal = () => {
+  const openAddModal = (type) => {
     setModalType(type);
     setEditData(null);
     setModalOpen(true);
   };
 
-  const openEditModal = () => {
+  const openEditModal = (type, data) => {
     setModalType(type);
     setEditData(data);
     setModalOpen(true);
@@ -355,9 +354,9 @@ export const ResumeEditor = ({ onDataChange }) => {
       icon: Briefcase,
       content: (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
             <p className="text-sm text-muted-foreground">Add your work experience</p>
-            <Button size="sm" variant="outline" onClick={() => openAddModal("experience")} className="gap-2">
+            <Button size="sm" variant="outline" onClick={() => openAddModal("experience")} className="gap-2 w-full sm:w-auto">
               <Plus className="w-4 h-4" />
               Add Experience
             </Button>
@@ -371,29 +370,29 @@ export const ResumeEditor = ({ onDataChange }) => {
           ) : (
             <div className="space-y-4">
               {experiences.map((exp) => (
-                <Card key={exp.id} className="p-4 border-l-4 border-l-primary">
-                  <div className="flex justify-between items-start mb-3">
-                    <h4 className="font-medium">Experience Entry</h4>
-                    <div className="flex gap-2">
+                <Card key={exp.id} className="p-3 border-l-4 border-l-primary">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
+                    <h4 className="font-medium text-sm">Experience Entry</h4>
+                    <div className="flex gap-1 self-start sm:self-auto">
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => openEditModal("experience", exp)}
-                        className="text-muted-foreground hover:text-foreground"
+                        className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
                       >
-                        <Edit className="w-4 h-4" />
+                        <Edit className="w-3 h-3" />
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => removeItem(exp.id, 'experience')}
-                        className="text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive h-8 w-8 p-0"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
                   </div>
-                  <div className="space-y-2 text-sm text-muted-foreground">
+                  <div className="space-y-1 text-xs text-muted-foreground">
                     <p><span className="font-medium">Job Title:</span> {exp.jobTitle || "Not specified"}</p>
                     <p><span className="font-medium">Company:</span> {exp.company || "Not specified"}</p>
                     <p><span className="font-medium">Duration:</span> {exp.startDate || "Not specified"} - {exp.endDate || "Present"}</p>
@@ -626,7 +625,7 @@ export const ResumeEditor = ({ onDataChange }) => {
       {/* Header */}
       <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border p-4 z-10">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Basics</h2>
+          <h2 className="text-lg font-semibold text-foreground">Resume Builder</h2>
           <Button
             onClick={() => handleAIAction("optimize-all")}
             className="ai-button gap-1 text-xs"
@@ -636,6 +635,7 @@ export const ResumeEditor = ({ onDataChange }) => {
             Optimize
           </Button>
         </div>
+        <p className="text-sm text-muted-foreground mt-1">Build your professional resume with AI assistance</p>
       </div>
       
       {/* Content */}
