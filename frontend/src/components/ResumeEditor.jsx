@@ -21,19 +21,20 @@ import {
   Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { AddEditModal} from "./AddEditModal";
+import { AddEditModal } from "./AddEditModal";
 
 const AIButton = ({ onClick, children }) => (
   <Button 
     size="sm" 
     variant="outline" 
-    className="ai-button-subtle h-7 text-xs gap-1"
+    className="ai-button-subtle h-7 text-xs gap-1 whitespace-nowrap"
     onClick={onClick}
   >
     <Sparkles className="w-3 h-3" />
     {children}
   </Button>
 );
+
 
 export const ResumeEditor = ({ onDataChange }) => {
   const { toast } = useToast();
@@ -68,6 +69,7 @@ export const ResumeEditor = ({ onDataChange }) => {
   const [certifications, setCertifications] = useState([]);
   const [skills, setSkills] = useState([]);
 
+  // Update parent component when data changes
   React.useEffect(() => {
     if (onDataChange) {
       onDataChange({
@@ -82,13 +84,14 @@ export const ResumeEditor = ({ onDataChange }) => {
     }
   }, [personalInfo, summary, experiences, education, projects, certifications, skills, onDataChange]);
 
-  const openAddModal = (type) => {
+  // Modal handlers
+  const openAddModal = () => {
     setModalType(type);
     setEditData(null);
     setModalOpen(true);
   };
 
-  const openEditModal = (type, data) => {
+  const openEditModal = () => {
     setModalType(type);
     setEditData(data);
     setModalOpen(true);
@@ -247,72 +250,72 @@ export const ResumeEditor = ({ onDataChange }) => {
       icon: User,
       content: (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3">
             <div className="field-group">
-              <Label htmlFor="fullName">Full Name *</Label>
+              <Label htmlFor="fullName" className="text-xs">Full Name</Label>
               <Input
                 id="fullName"
                 value={personalInfo.fullName}
                 onChange={(e) => setPersonalInfo(prev => ({ ...prev, fullName: e.target.value }))}
-                placeholder="Krish"
-                className="mt-1"
+                placeholder="dummy naanthan"
+                className="h-8 text-sm"
               />
             </div>
             <div className="field-group">
-              <Label htmlFor="email">Email Address *</Label>
+              <Label htmlFor="email" className="text-xs">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={personalInfo.email}
                 onChange={(e) => setPersonalInfo(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="krish@example.com"
-                className="mt-1"
+                placeholder="naanthardummy@gmail.com"
+                className="h-8 text-sm"
               />
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="field-group">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                value={personalInfo.phone}
-                onChange={(e) => setPersonalInfo(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="+1 (555) 123-4567"
-                className="mt-1"
-              />
-            </div>
-            <div className="field-group">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                value={personalInfo.location}
-                onChange={(e) => setPersonalInfo(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="New York, NY"
-                className="mt-1"
-              />
-            </div>
+          <div className="grid grid-cols-1 gap-3">
+              <div className="field-group">
+                <Label htmlFor="phone" className="text-xs">Phone Number</Label>
+                <Input
+                  id="phone"
+                  value={personalInfo.phone}
+                  onChange={(e) => setPersonalInfo(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="+1 (555) 123-4567"
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div className="field-group">
+                <Label htmlFor="location" className="text-xs">Location</Label>
+                <Input
+                  id="location"
+                  value={personalInfo.location}
+                  onChange={(e) => setPersonalInfo(prev => ({ ...prev, location: e.target.value }))}
+                  placeholder="New York, NY"
+                  className="h-8 text-sm"
+                />
+              </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3">
             <div className="field-group">
-              <Label htmlFor="linkedin">LinkedIn</Label>
+              <Label htmlFor="linkedin" className="text-xs">LinkedIn</Label>
               <Input
                 id="linkedin"
                 value={personalInfo.linkedin}
                 onChange={(e) => setPersonalInfo(prev => ({ ...prev, linkedin: e.target.value }))}
-                placeholder="linkedin.com/in/Krishnarajan7"
-                className="mt-1"
+                placeholder="linkedin.com/in/johndoe"
+                className="h-8 text-sm"
               />
             </div>
             <div className="field-group">
-              <Label htmlFor="website">Portfolio/Website</Label>
+              <Label htmlFor="website" className="text-xs">Portfolio/Website</Label>
               <Input
                 id="website"
                 value={personalInfo.website}
                 onChange={(e) => setPersonalInfo(prev => ({ ...prev, website: e.target.value }))}
-                placeholder="sample.com"
-                className="mt-1"
+                placeholder="johndoe.com"
+                className="h-8 text-sm"
               />
             </div>
           </div>
@@ -324,19 +327,13 @@ export const ResumeEditor = ({ onDataChange }) => {
       title: "Professional Summary",
       icon: FileText,
       content: (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="field-group">
-            <div className="flex flex-col gap-2 mb-2">
-              <Label htmlFor="summary">Summary</Label>
-              <div className="flex flex-wrap gap-2 justify-start">
-                <AIButton onClick={() => handleAIAction("fix-grammar", "summary")}>
-                  Fix Grammar
-                </AIButton>
-                <AIButton onClick={() => handleAIAction("rephrase", "summary")}>
-                  Rephrase
-                </AIButton>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="summary" className="text-xs">Summary</Label>
+              <div className="flex gap-1">
                 <AIButton onClick={() => handleAIAction("enhance", "summary")}>
-                  Enhance Impact
+                  Enhance
                 </AIButton>
               </div>
             </div>
@@ -344,9 +341,9 @@ export const ResumeEditor = ({ onDataChange }) => {
               id="summary"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
-              placeholder="Write a compelling professional summary that highlights your key achievements and career objectives..."
-              rows={5}
-              className="resize-none"
+              placeholder="Professional summary highlighting key achievements..."
+              rows={4}
+              className="resize-none text-sm"
             />
           </div>
         </div>
@@ -625,55 +622,61 @@ export const ResumeEditor = ({ onDataChange }) => {
   ];
 
   return (
-    <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 overflow-x-hidden">
-      <div className="space-y-1 sm:space-y-2">
-        <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground">Resume Editor</h2>
-        <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">Build your professional resume with AI assistance</p>
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border p-4 z-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-foreground">Basics</h2>
+          <Button
+            onClick={() => handleAIAction("optimize-all")}
+            className="ai-button gap-1 text-xs"
+            size="sm"
+          >
+            <Sparkles className="w-3 h-3" />
+            Optimize
+          </Button>
+        </div>
       </div>
-
-      <Button className="w-full ai-button gap-2" onClick={() => handleAIAction("optimize-resume")}>
-        <Sparkles className="w-4 h-4" />
-        Optimize Entire Resume
-      </Button>
-
-      <AddEditModal 
-        type={modalType}
-        isOpen={modalOpen}
-        onClose={closeModal}
-        editData={editData}
-        onSave={handleModalSave}
-      />
-
-      <div className="space-y-4">
-        {sections.map((section) => {
-          const Icon = section.icon;
-          const isOpen = openSections[section.key];
-          
-          return (
-            <Card key={section.key} className="resume-section">
-              <Collapsible open={isOpen} onOpenChange={() => toggleSection(section.key)}>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="resume-section-header p-4">
-                    <div className="flex items-center gap-3">
-                      <Icon className="w-5 h-5 text-primary" />
-                      <CardTitle className="text-base font-medium">{section.title}</CardTitle>
+      
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {sections.map((section) => (
+          <Collapsible
+            key={section.key}
+            open={openSections[section.key]}
+            onOpenChange={() => toggleSection(section.key)}
+          >
+            <Card className="bg-card border border-border/30 hover:border-border/60 transition-all">
+              <CollapsibleTrigger className="w-full">
+                <CardHeader className="p-3 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <section.icon className="w-4 h-4 text-muted-foreground" />
+                      <h3 className="text-sm font-medium text-left">{section.title}</h3>
                     </div>
-                    {isOpen ? (
-                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    )}
-                  </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent className="resume-section-content p-4 pt-0">
-                    {section.content}
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${
+                      openSections[section.key] ? 'rotate-180' : ''
+                    }`} />
+                  </div>
+                </CardHeader>
+              </CollapsibleTrigger>
+
+              <CollapsibleContent>
+                <CardContent className="p-3 pt-0 space-y-3">
+                  {section.content}
+                </CardContent>
+              </CollapsibleContent>
             </Card>
-          );
-        })}
+          </Collapsible>
+        ))}
+
+        <AddEditModal
+          isOpen={modalOpen}
+          onClose={closeModal}
+          onSave={handleModalSave}
+          type={modalType}
+          editData={editData}
+        />
       </div>
     </div>
   );

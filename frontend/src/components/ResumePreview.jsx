@@ -1,20 +1,19 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ZoomIn, ZoomOut, Download, FileText } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-
+import { ZoomIn, ZoomOut } from "lucide-react";
+import { useState } from "react";
 
 const ModernTemplate = ({ data }) => (
   <div className="bg-white p-8 max-w-4xl mx-auto shadow-lg rounded-lg">
     {/* Header */}
     <div className="border-b-2 border-gray-200 pb-6 mb-6">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">
-        {data?.personalInfo?.fullName || "Krishnarajan"}
+        {data?.personalInfo?.fullName || "John Doe"}
       </h1>
       <p className="text-lg text-gray-600 mb-4">Senior Software Engineer</p>
       <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-        <span>{data?.personalInfo?.email || "sample@example.com"}</span>
+        <span>{data?.personalInfo?.email || "john@example.com"}</span>
         {data?.personalInfo?.phone && <span>{data.personalInfo.phone}</span>}
         {data?.personalInfo?.location && <span>{data.personalInfo.location}</span>}
         {data?.personalInfo?.linkedin && <span>{data.personalInfo.linkedin}</span>}
@@ -104,10 +103,10 @@ const MinimalTemplate = ({ data }) => (
   <div className="bg-white p-8 max-w-4xl mx-auto">
     {/* Header */}
     <div className="text-center mb-8">
-      <h1 className="text-4xl font-light text-gray-900 mb-2">Krish</h1>
+      <h1 className="text-4xl font-light text-gray-900 mb-2">John Doe</h1>
       <p className="text-lg text-gray-600 mb-4">Senior Software Engineer</p>
       <div className="flex justify-center gap-6 text-sm text-gray-600">
-        <span>sample@example.com</span>
+        <span>john@example.com</span>
         <span>+1 (555) 123-4567</span>
         <span>New York, NY</span>
       </div>
@@ -145,22 +144,11 @@ const MinimalTemplate = ({ data }) => (
   </div>
 );
 
-export const ResumePreview = ({ template, resumeData }) => {
-  const { toast } = useToast();
+export const ResumePreview = ({ template, resumeData, fontFamily, fontSize }) => {
+  const [zoom, setZoom] = useState(1);
 
-  const handleExportPDF = () => {
-    toast({
-      title: "Export PDF",
-      description: "PDF export functionality will be available soon!",
-    });
-  };
-
-  const handleExportDOCX = () => {
-    toast({
-      title: "Export DOCX",
-      description: "DOCX export functionality will be available soon!",
-    });
-  };
+  const handleZoomIn = () => setZoom((z) => Math.min(1.6, parseFloat((z + 0.1).toFixed(2))));
+  const handleZoomOut = () => setZoom((z) => Math.max(0.6, parseFloat((z - 0.1).toFixed(2))));
 
   const renderTemplate = () => {
     switch (template) {
@@ -182,22 +170,12 @@ export const ResumePreview = ({ template, resumeData }) => {
         
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1 sm:gap-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleZoomOut} aria-label="Zoom out">
               <ZoomOut className="w-4 h-4" />
             </Button>
-            <span className="text-xs sm:text-sm text-muted-foreground px-1 sm:px-2">100%</span>
-            <Button variant="outline" size="sm">
+            <span className="text-xs sm:text-sm text-muted-foreground px-1 sm:px-2">{Math.round(zoom * 100)}%</span>
+            <Button variant="outline" size="sm" onClick={handleZoomIn} aria-label="Zoom in">
               <ZoomIn className="w-4 h-4" />
-            </Button>
-          </div>
-          <div className="flex gap-2">
-            <Button size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm" onClick={handleExportPDF}>
-              <Download className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Export </span>PDF
-            </Button>
-            <Button size="sm" variant="outline" className="gap-1 sm:gap-2 text-xs sm:text-sm" onClick={handleExportDOCX}>
-              <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
-              DOCX
             </Button>
           </div>
         </div>
@@ -206,7 +184,10 @@ export const ResumePreview = ({ template, resumeData }) => {
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 sm:p-4 overflow-auto h-[calc(100vh-160px)] sm:h-[calc(100vh-200px)]">
         <div className="flex justify-center min-w-0">
           <Card className="shadow-2xl w-full max-w-4xl overflow-hidden">
-            <div className="scale-75 sm:scale-90 lg:scale-100 origin-top transition-transform">
+            <div
+              className="origin-top transition-transform"
+              style={{ transform: `scale(${zoom})`, fontFamily: fontFamily, fontSize: fontSize ? `${fontSize}px` : undefined }}
+            >
               {renderTemplate()}
             </div>
           </Card>

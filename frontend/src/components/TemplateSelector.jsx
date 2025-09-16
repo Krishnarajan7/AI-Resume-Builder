@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 const templates = {
   minimal: [
@@ -64,116 +65,83 @@ const templates = {
 
 const TemplatePreview = ({ template, isSelected, onClick }) => (
   <Card 
-    className={`template-card cursor-pointer transition-all duration-200 ${
-      isSelected ? 'active' : ''
+    className={`cursor-pointer transition-all duration-200 hover:shadow-sm ${
+      isSelected ? 'ring-2 ring-primary bg-primary/5' : 'hover:border-primary/30'
     }`}
     onClick={onClick}
   >
-    <CardContent className="p-0">
-      {/* Template Preview Image Placeholder */}
-      <div className="aspect-[8.5/11] bg-gradient-to-b from-gray-50 to-gray-100 rounded-t-lg relative overflow-hidden">
-        <div className="absolute inset-4 bg-white rounded shadow-sm">
-          <div className="p-3 space-y-2">
-            <div className="h-2 bg-gray-800 rounded w-1/2"></div>
-            <div className="h-1 bg-gray-400 rounded w-1/3"></div>
-            <div className="space-y-1 mt-3">
-              <div className="h-1 bg-gray-300 rounded"></div>
-              <div className="h-1 bg-gray-300 rounded w-4/5"></div>
-              <div className="h-1 bg-gray-300 rounded w-3/4"></div>
+    <CardContent className="p-2">
+      <div className="aspect-[3/4] bg-muted/50 rounded-md mb-2 overflow-hidden relative">
+        <div className="absolute inset-2 bg-card rounded shadow-sm">
+          <div className="p-2 space-y-1">
+            <div className="h-1 bg-foreground rounded w-1/2"></div>
+            <div className="h-0.5 bg-muted-foreground rounded w-1/3"></div>
+            <div className="space-y-0.5 mt-2">
+              <div className="h-0.5 bg-muted-foreground/60 rounded"></div>
+              <div className="h-0.5 bg-muted-foreground/60 rounded w-4/5"></div>
+              <div className="h-0.5 bg-muted-foreground/60 rounded w-3/4"></div>
             </div>
-            <div className="mt-3 space-y-1">
-              <div className="h-1 bg-gray-600 rounded w-1/4"></div>
-              <div className="h-1 bg-gray-300 rounded w-2/3"></div>
-              <div className="h-1 bg-gray-300 rounded w-1/2"></div>
+            <div className="mt-2 space-y-0.5">
+              <div className="h-0.5 bg-foreground/80 rounded w-1/4"></div>
+              <div className="h-0.5 bg-muted-foreground/60 rounded w-2/3"></div>
             </div>
           </div>
         </div>
         {isSelected && (
-          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-            <Badge className="bg-primary text-primary-foreground">Selected</Badge>
+          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+            <Badge className="bg-primary text-primary-foreground text-xs">✓</Badge>
           </div>
         )}
       </div>
       
-      <div className="p-3">
-        <h3 className="font-medium text-sm mb-1">{template.name}</h3>
-        <p className="text-xs text-muted-foreground">{template.description}</p>
-      </div>
+      <h3 className="font-medium text-xs text-center text-foreground">{template.name}</h3>
     </CardContent>
   </Card>
 );
 
 export const TemplateSelector = ({ selectedTemplate, onTemplateSelect }) => {
   return (
-    <div className="p-6 space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-semibold text-foreground">Templates</h2>
-        <p className="text-muted-foreground">Choose a professional template for your resume</p>
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border p-4 z-10">
+        <h2 className="text-lg font-semibold text-foreground">Templates</h2>
       </div>
+      
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
-      <div className="space-y-4">
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" className="gap-2">
-            1-Column
-          </Button>
-          <Button size="sm" variant="outline" className="gap-2">
-            2-Column
-          </Button>
+        <Tabs defaultValue="professional" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-3">
+            <TabsTrigger value="professional" className="text-xs">Pro</TabsTrigger>
+            <TabsTrigger value="modern" className="text-xs">Modern</TabsTrigger>
+            <TabsTrigger value="creative" className="text-xs">Creative</TabsTrigger>
+          </TabsList>
+
+          {Object.entries(templates).slice(1).map(([category, categoryTemplates]) => (
+            <TabsContent key={category} value={category} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                {categoryTemplates.map((template) => (
+                  <TemplatePreview
+                    key={template.id}
+                    template={template}
+                    isSelected={selectedTemplate === template.id}
+                    onClick={() => onTemplateSelect(template.id)}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
+
+        <div className="mt-4 p-3 bg-muted/30 rounded-lg">
+          <h3 className="font-medium mb-2 text-foreground text-sm">Features</h3>
+          <ul className="text-xs text-muted-foreground space-y-1">
+            <li>• ATS-friendly</li>
+            <li>• Professional design</li>
+            <li>• Export ready</li>
+          </ul>
         </div>
-
-        <div className="flex items-center gap-2">
-          <input type="checkbox" id="profile-pic" className="rounded" />
-          <label htmlFor="profile-pic" className="text-sm text-muted-foreground">
-            Include profile picture
-          </label>
-        </div>
-      </div>
-
-      <Tabs defaultValue="professional" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="minimal" className="text-xs">Minimal</TabsTrigger>
-          <TabsTrigger value="professional" className="text-xs">Professional</TabsTrigger>
-          <TabsTrigger value="modern" className="text-xs">Modern</TabsTrigger>
-          <TabsTrigger value="creative" className="text-xs">Creative</TabsTrigger>
-        </TabsList>
-
-        {Object.entries(templates).map(([category, categoryTemplates]) => (
-          <TabsContent key={category} value={category} className="mt-6">
-            <div className="grid grid-cols-1 gap-4">
-              {categoryTemplates.map((template) => (
-                <TemplatePreview
-                  key={template.id}
-                  template={template}
-                  isSelected={selectedTemplate === template.id}
-                  onClick={() => onTemplateSelect(template.id)}
-                />
-              ))}
-            </div>
-          </TabsContent>
-        ))}
-      </Tabs>
-
-      <div className="pt-4 border-t border-border">
-        <h3 className="font-medium mb-3">Template Features</h3>
-        <ul className="space-y-2 text-sm text-muted-foreground">
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-            ATS-Friendly Format
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-            Print-Optimized Layout
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-            Professional Typography
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-            Mobile Responsive
-          </li>
-        </ul>
       </div>
     </div>
-  ); 
+  );
 };
