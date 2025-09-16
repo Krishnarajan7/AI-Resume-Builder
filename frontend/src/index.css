@@ -1,12 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Professional AI Resume Builder Design System */
 
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -173,24 +171,24 @@
 @layer components {
   /* AI Feature button styles */
   .ai-button {
-    @apply inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-md hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-md hover:from-primary/90 hover:to-primary/70 transition-all duration-200 shadow-sm hover:shadow-md;
   }
 
   .ai-button-subtle {
-    @apply inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-purple-50 text-purple-700 rounded-md hover:bg-purple-100 transition-colors border border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800 dark:hover:bg-purple-900/30;
+    @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-muted text-muted-foreground rounded-md hover:bg-muted/80 transition-colors border border-border;
   }
 
-  /* Panel layouts */
+  /* Panel layouts - More compact and professional */
   .editor-panel {
-    @apply bg-gray-50 dark:bg-gray-900/50;
+    @apply bg-card/20 border-r border-border/50;
   }
 
   .preview-panel {
-    @apply bg-white dark:bg-gray-900;
+    @apply bg-muted/10;
   }
 
   .templates-panel {
-    @apply bg-gray-50 dark:bg-gray-900/50;
+    @apply bg-card/20 border-l border-border/50;
   }
 
   /* Resume sections */
@@ -206,9 +204,18 @@
     @apply mt-4 space-y-4;
   }
 
-  /* Form field group */
+  /* Form field group - More compact */
   .field-group {
-    @apply space-y-2;
+    @apply space-y-1.5;
+  }
+
+  .field-group label {
+    @apply text-xs font-medium text-foreground;
+  }
+
+  .field-group input,
+  .field-group textarea {
+    @apply text-sm;
   }
 
   .field-with-ai {
