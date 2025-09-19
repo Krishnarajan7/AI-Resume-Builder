@@ -1,0 +1,80 @@
+// -------------------------
+// Prisma Generator and Datasource
+// -------------------------
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------
+// USERS MODEL (Core profile)
+// -------------------------
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  name            String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  emailVerified   DateTime?
+
+  // Relations
+  authProviders   AuthProvider[]
+  sessions        Session[]
+}
+
+// -------------------------
+// AUTH PROVIDERS MODEL
+// -------------------------
+model AuthProvider {
+  id              String    @id @default(uuid())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+
+  provider        Provider
+  providerUserId  String?
+
+  passwordHash    String?
+  accessToken     String?
+  refreshToken    String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([provider, providerUserId])
+}
+
+// -------------------------
+// SESSIONS MODEL
+// -------------------------
+model Session {
+  id            String    @id @default(uuid())
+  sessionToken  String    @unique
+  userId        String
+  expires       DateTime
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// -------------------------
+// VERIFICATION TOKENS MODEL
+// -------------------------
+model VerificationToken {
+  id          String   @id @default(uuid())
+  identifier  String
+  token       String   @unique
+  expires     DateTime
+
+  @@unique([identifier, token])
+}
+
+// -------------------------
+// ENUM for providers
+// -------------------------
+enum Provider {
+  email
+  google
+  github
+}
