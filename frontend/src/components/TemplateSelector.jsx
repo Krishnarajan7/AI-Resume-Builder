@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-
 const templates = {
   minimal: [
     {
@@ -31,6 +30,18 @@ const templates = {
       name: "Corporate Classic",
       preview: "corporate-classic.png",
       description: "Traditional professional layout"
+    },
+    {
+      id: "pro-executive",
+      name: "Executive Pro",
+      preview: "pro-executive.png",
+      description: "Premium executive-level design"
+    },
+    {
+      id: "pro-consultant",
+      name: "Business Consultant",
+      preview: "pro-consultant.png",
+      description: "Consulting industry focused template"
     }
   ],
   modern: [
@@ -45,6 +56,18 @@ const templates = {
       name: "Tech Modern",
       preview: "modern-tech.png",
       description: "Perfect for tech professionals"
+    },
+    {
+      id: "modern-startup",
+      name: "Startup Modern",
+      preview: "modern-startup.png",
+      description: "Dynamic design for startup environments"
+    },
+    {
+      id: "modern-data",
+      name: "Data Analyst",
+      preview: "modern-data.png",
+      description: "Analytical and clean modern layout"
     }
   ],
   creative: [
@@ -59,6 +82,18 @@ const templates = {
       name: "Artistic Creative",
       preview: "creative-artistic.png",
       description: "Unique layout for artists and designers"
+    },
+    {
+      id: "creative-portfolio",
+      name: "Portfolio Creative",
+      preview: "creative-portfolio.png",
+      description: "Showcase-oriented design for portfolios"
+    },
+    {
+      id: "creative-freelance",
+      name: "Freelancer Creative",
+      preview: "creative-freelance.png",
+      description: "Versatile design for freelance professionals"
     }
   ]
 };

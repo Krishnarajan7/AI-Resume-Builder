@@ -360,6 +360,54 @@ export const AddEditModal = ({ type, isOpen, onClose, editData, onSave }) => {
           </div>
         );
 
+      case "custom":
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="fieldName">Field Name</Label>
+              <Input
+                id="fieldName"
+                value={formData.fieldName || ""}
+                onChange={(e) => updateField("fieldName", e.target.value)}
+                placeholder="e.g., Awards, Publications, Volunteer Work"
+              />
+            </div>
+            <div>
+              <Label htmlFor="fieldType">Field Type</Label>
+              <select
+                id="fieldType"
+                value={formData.fieldType || "text"}
+                onChange={(e) => updateField("fieldType", e.target.value)}
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+              >
+                <option value="text">Text</option>
+                <option value="textarea">Long Text</option>
+                <option value="date">Date</option>
+                <option value="list">List</option>
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="fieldContent">Content</Label>
+              {formData.fieldType === "textarea" ? (
+                <Textarea
+                  id="fieldContent"
+                  value={formData.fieldContent || ""}
+                  onChange={(e) => updateField("fieldContent", e.target.value)}
+                  placeholder="Enter your content here..."
+                  rows={4}
+                />
+              ) : (
+                <Input
+                  id="fieldContent"
+                  value={formData.fieldContent || ""}
+                  onChange={(e) => updateField("fieldContent", e.target.value)}
+                  placeholder="Enter your content here..."
+                />
+              )}
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }

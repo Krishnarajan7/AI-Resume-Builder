@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Undo, Redo } from "lucide-react";
 import { useState } from "react";
 
-const ModernTemplate = ({ data }) => (
-  <div className="bg-white p-8 max-w-4xl mx-auto shadow-lg rounded-lg">
+const ModernTemplate = ({ data, primaryColor, backgroundColor, textColor }) => (
+  <div className="p-8 max-w-4xl mx-auto shadow-lg rounded-lg" style={{ backgroundColor: backgroundColor || undefined, color: textColor || undefined }}>
     {/* Header */}
     <div className="border-b-2 border-gray-200 pb-6 mb-6">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -22,7 +22,7 @@ const ModernTemplate = ({ data }) => (
 
     {/* Professional Summary */}
     <div className="mb-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-3 border-l-4 border-blue-500 pl-3">
+      <h2 className="text-xl font-semibold text-gray-900 mb-3 border-l-4 pl-3" style={{ borderLeftColor: primaryColor }}>
         Professional Summary
       </h2>
       <p className="text-gray-700 leading-relaxed">
@@ -32,7 +32,7 @@ const ModernTemplate = ({ data }) => (
 
     {/* Experience */}
     <div className="mb-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-l-4 border-blue-500 pl-3">
+      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-l-4 pl-3" style={{ borderLeftColor: primaryColor }}>
         Work Experience
       </h2>
       
@@ -41,7 +41,7 @@ const ModernTemplate = ({ data }) => (
           <div className="flex justify-between items-start mb-2">
             <div>
               <h3 className="font-semibold text-gray-900">Senior Software Engineer</h3>
-              <p className="text-blue-600 font-medium">TechCorp Inc.</p>
+              <p className="font-medium" style={{ color: primaryColor }}>TechCorp Inc.</p>
             </div>
             <span className="text-gray-600 text-sm">Jan 2021 - Present</span>
           </div>
@@ -56,7 +56,7 @@ const ModernTemplate = ({ data }) => (
           <div className="flex justify-between items-start mb-2">
             <div>
               <h3 className="font-semibold text-gray-900">Software Engineer</h3>
-              <p className="text-blue-600 font-medium">StartupXYZ</p>
+              <p className="font-medium" style={{ color: primaryColor }}>StartupXYZ</p>
             </div>
             <span className="text-gray-600 text-sm">Jun 2019 - Dec 2020</span>
           </div>
@@ -71,13 +71,13 @@ const ModernTemplate = ({ data }) => (
 
     {/* Education */}
     <div className="mb-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-l-4 border-blue-500 pl-3">
+      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-l-4 pl-3" style={{ borderLeftColor: primaryColor }}>
         Education
       </h2>
       <div className="flex justify-between items-start">
         <div>
           <h3 className="font-semibold text-gray-900">Bachelor of Science in Computer Science</h3>
-          <p className="text-blue-600 font-medium">University of Technology</p>
+          <p className="font-medium" style={{ color: primaryColor }}>University of Technology</p>
         </div>
         <span className="text-gray-600 text-sm">2015 - 2019</span>
       </div>
@@ -85,7 +85,7 @@ const ModernTemplate = ({ data }) => (
 
     {/* Skills */}
     <div className="mb-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-l-4 border-blue-500 pl-3">
+      <h2 className="text-xl font-semibold text-gray-900 mb-4 border-l-4 pl-3" style={{ borderLeftColor: primaryColor }}>
         Technical Skills
       </h2>
       <div className="flex flex-wrap gap-2">
@@ -99,8 +99,8 @@ const ModernTemplate = ({ data }) => (
   </div>
 );
 
-const MinimalTemplate = ({ data }) => (
-  <div className="bg-white p-8 max-w-4xl mx-auto">
+const MinimalTemplate = ({ data, backgroundColor, textColor, primaryColor }) => (
+  <div className="p-8 max-w-4xl mx-auto" style={{ backgroundColor: backgroundColor || undefined, color: textColor || undefined }}>
     {/* Header */}
     <div className="text-center mb-8">
       <h1 className="text-4xl font-light text-gray-900 mb-2">John Doe</h1>
@@ -149,6 +149,10 @@ export const ResumePreview = ({
   resumeData, 
   fontFamily, 
   fontSize, 
+  primaryColor, 
+  backgroundColor, 
+  textColor, 
+  lineHeight, 
   onUndo, 
   onRedo, 
   canUndo = false, 
@@ -170,10 +174,10 @@ export const ResumePreview = ({
   const renderTemplate = () => {
     switch (template) {
       case "minimal":
-        return <MinimalTemplate data={resumeData} />;
+        return <MinimalTemplate data={resumeData} backgroundColor={backgroundColor} textColor={textColor} primaryColor={primaryColor} />;
       case "modern":
       default:
-        return <ModernTemplate data={resumeData} />;
+        return <ModernTemplate data={resumeData} primaryColor={primaryColor} backgroundColor={backgroundColor} textColor={textColor} />;
     }
   };
 
@@ -222,7 +226,7 @@ export const ResumePreview = ({
           <Card className="shadow-2xl w-full max-w-4xl overflow-hidden">
             <div
               className="origin-top transition-transform"
-              style={{ transform: `scale(${zoom})`, fontFamily: fontFamily, fontSize: fontSize ? `${fontSize}px` : undefined }}
+              style={{ transform: `scale(${zoom})`, fontFamily: fontFamily, fontSize: fontSize ? `${fontSize}px` : undefined, lineHeight: lineHeight ? `${lineHeight}` : undefined, color: textColor }}
             >
               {renderTemplate()}
             </div>

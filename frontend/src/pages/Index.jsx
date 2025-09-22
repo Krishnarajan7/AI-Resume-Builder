@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { ResumeEditor } from "@/components/ResumeEditor";
 import { ResumePreview } from "@/components/ResumePreview";
 import { TemplateSelector } from "@/components/TemplateSelector";
@@ -18,7 +18,7 @@ const Index = () => {
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
   const [resumeData, setResumeData] = useState({});
   const [fontFamily, setFontFamily] = useState("Inter");
-  const [fontSize, setFontSize] = useState(14);
+  const [fontSize, setFontSize] = useState(12);
   const [primaryColor, setPrimaryColor] = useState("#2563eb");
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [textColor, setTextColor] = useState("#000000");
@@ -28,14 +28,14 @@ const Index = () => {
   const [history, setHistory] = useState([resumeData]);
   const [historyIndex, setHistoryIndex] = useState(0);
 
-  const handleDataChange = (newData) => {
+  const handleDataChange = React.useCallback((newData) => {
     setResumeData(newData);
     // Add to history for undo/redo
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(newData);
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
-  };
+  }, [history, historyIndex]);
 
   const handleUndo = () => {
     if (historyIndex > 0) {
@@ -116,6 +116,10 @@ const Index = () => {
               resumeData={resumeData} 
               fontFamily={fontFamily} 
               fontSize={fontSize}
+              primaryColor={primaryColor}
+              backgroundColor={backgroundColor}
+              textColor={textColor}
+              lineHeight={lineHeight}
               onUndo={handleUndo}
               onRedo={handleRedo}
               canUndo={historyIndex > 0}
@@ -146,7 +150,7 @@ const Index = () => {
                   <LayoutPanel />
                 </TabsContent>
                 
-                <TabsContent value="design" className="h-full m-0 space-y-0">
+                <TabsContent value="design" className="h-full m-0 overflow-y-auto">
                   <TypographyPanel 
                     fontFamily={fontFamily}
                     onFontFamilyChange={setFontFamily}
@@ -184,6 +188,10 @@ const Index = () => {
                 resumeData={resumeData} 
                 fontFamily={fontFamily} 
                 fontSize={fontSize}
+                primaryColor={primaryColor}
+                backgroundColor={backgroundColor}
+                textColor={textColor}
+                lineHeight={lineHeight}
                 onUndo={handleUndo}
                 onRedo={handleRedo}
                 canUndo={historyIndex > 0}
@@ -214,7 +222,7 @@ const Index = () => {
                   <LayoutPanel />
                 </TabsContent>
                 
-                <TabsContent value="design">
+                <TabsContent value="design" className="h-full m-0 overflow-y-auto">
                   <TypographyPanel 
                     fontFamily={fontFamily}
                     onFontFamilyChange={setFontFamily}

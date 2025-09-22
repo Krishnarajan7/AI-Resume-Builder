@@ -35,6 +35,7 @@ const AIButton = ({ onClick, children }) => (
   </Button>
 );
 
+
 export const ResumeEditor = ({ onDataChange }) => {
   const { toast } = useToast();
   
@@ -67,9 +68,10 @@ export const ResumeEditor = ({ onDataChange }) => {
   const [projects, setProjects] = useState([]);
   const [certifications, setCertifications] = useState([]);
   const [skills, setSkills] = useState([]);
+  const [customFields, setCustomFields] = useState([]);
 
   // Update parent component when data changes
-  React.useEffect(() => {
+  const handleDataUpdate = React.useCallback(() => {
     if (onDataChange) {
       onDataChange({
         personalInfo,
@@ -78,10 +80,15 @@ export const ResumeEditor = ({ onDataChange }) => {
         education,
         projects,
         certifications,
-        skills
+        skills,
+        customFields
       });
     }
-  }, [personalInfo, summary, experiences, education, projects, certifications, skills, onDataChange]);
+  }, [personalInfo, summary, experiences, education, projects, certifications, skills, customFields, onDataChange]);
+
+  React.useEffect(() => {
+    handleDataUpdate();
+  }, [handleDataUpdate]);
 
   // Modal handlers
   const openAddModal = (type) => {
@@ -136,6 +143,13 @@ export const ResumeEditor = ({ onDataChange }) => {
         if (data.skillName) {
           const skillToAdd = `${data.skillName}${data.proficiency ? ` (${data.proficiency})` : ''}`;
           setSkills(prev => [...prev, skillToAdd]);
+        }
+        break;
+      case 'custom':
+        if (editData) {
+          setCustomFields(prev => prev.map(item => item.id === editData.id ? data : item));
+        } else {
+          setCustomFields(prev => [...prev, data]);
         }
         break;
     }
@@ -234,6 +248,9 @@ export const ResumeEditor = ({ onDataChange }) => {
         break;
       case 'certification':
         setCertifications(prev => prev.filter(item => item.id !== id));
+        break;
+      case 'custom':
+        setCustomFields(prev => prev.filter(item => item.id !== id));
         break;
     }
     toast({
@@ -468,11 +485,11 @@ export const ResumeEditor = ({ onDataChange }) => {
       icon: Code,
       content: (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">Add your skills</p>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => openAddModal("skill")} className="gap-2">
-                <Plus className="w-4 h-4" />
+            <div className="flex flex-col gap-2">
+              <Button size="sm" variant="outline" onClick={() => openAddModal("skill")} className="gap-2 text-xs h-8">
+                <Plus className="w-3 h-3" />
                 Add Skill
               </Button>
               <AIButton onClick={() => handleAIAction("suggest-skills")}>
@@ -567,10 +584,10 @@ export const ResumeEditor = ({ onDataChange }) => {
       icon: Award,
       content: (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">Add your certifications</p>
-            <Button size="sm" variant="outline" onClick={() => openAddModal("certification")} className="gap-2">
-              <Plus className="w-4 h-4" />
+            <Button size="sm" variant="outline" onClick={() => openAddModal("certification")} className="gap-2 text-xs h-8">
+              <Plus className="w-3 h-3" />
               Add Certification
             </Button>
           </div>
@@ -644,7 +661,7 @@ export const ResumeEditor = ({ onDataChange }) => {
           <Collapsible
             key={section.key}
             open={openSections[section.key]}
-            onOpenChange={() => toggleSection(section.key)}
+            onOpenChange={() => toggleSection(section.key )}
           >
             <Card className="bg-card border border-border/30 hover:border-border/60 transition-all">
               <CollapsibleTrigger className="w-full">
@@ -669,6 +686,59 @@ export const ResumeEditor = ({ onDataChange }) => {
             </Card>
           </Collapsible>
         ))}
+
+        {/* Custom Fields Section */}
+        {customFields.length > 0 && customFields.map((field) => (
+          <Card key={field.id} className="bg-card border border-border/30 hover:border-border/60 transition-all">
+            <CardHeader className="p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Plus className="w-4 h-4 text-muted-foreground" />
+                  <h3 className="text-sm font-medium">{field.fieldName || "Custom Field"}</h3>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => openEditModal("custom", field)}
+                    className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
+                  >
+                    <Edit className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeItem(field.id, 'custom')}
+                    className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-3 pt-0 space-y-2">
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p><span className="font-medium">Type:</span> {field.fieldType || "Text"}</p>
+                {field.fieldContent && <p><span className="font-medium">Content:</span> {field.fieldContent}</p>}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+
+        {/* Add Custom Field Button */}
+        <Card className="bg-card border border-border/30">
+          <CardContent className="p-3">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => openAddModal("custom")} 
+              className="w-full gap-2 text-xs h-8"
+            >
+              <Plus className="w-3 h-3" />
+              Add Custom Field
+            </Button>
+          </CardContent>
+        </Card>
 
         <AddEditModal
           isOpen={modalOpen}
