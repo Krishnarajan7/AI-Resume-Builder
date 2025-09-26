@@ -1,7 +1,11 @@
 import prisma from "../config/db.js";
 import bcrypt from "bcrypt";
-import { generateTokens } from "../utils/jwt.js";
-import { rotateRefreshToken, invalidateAllSessions } from "../services/auth.service.js";
+import { generateTokens, verifyRefreshToken } from "../utils/jwt.js";
+import {
+  rotateRefreshToken,
+  invalidateAllSessions,
+  findValidSession,
+} from "../services/auth.service.js";
 
 // Password complexity regex: min 8 chars, upper, lower, number, special
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
@@ -9,25 +13,27 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 /**
  * Handles OAuth user sign-in/up and provider linking.
  */
-export function handleOAuthUser(provider) {
+export function handleOAuthUserJWT(provider) {
   return async (accessToken, refreshToken, profile, done) => {
     try {
       const emailObj = profile.emails?.[0];
       const email = emailObj?.value?.toLowerCase().trim();
       if (!email) return done(new Error("No email from OAuth provider"), null);
 
+      // Find or create user
       let user = await prisma.user.findUnique({
         where: { email },
-        include: { authProviders: true }
+        include: { authProviders: true },
       });
 
       if (user) {
+        // Upsert provider
         await prisma.authProvider.upsert({
           where: {
             provider_providerUserId: {
               provider,
-              providerUserId: profile.id
-            }
+              providerUserId: profile.id,
+            },
           },
           update: { accessToken, refreshToken },
           create: {
@@ -35,40 +41,43 @@ export function handleOAuthUser(provider) {
             provider,
             providerUserId: profile.id,
             accessToken,
-            refreshToken
-          }
+            refreshToken,
+          },
         });
       } else {
+        // Create new user with provider
         user = await prisma.user.create({
           data: {
             email,
-            name: profile.displayName || profile.username || email.split("@")[0],
+            name:
+              profile.displayName || profile.username || email.split("@")[0],
             authProviders: {
               create: {
                 provider,
                 providerUserId: profile.id,
                 accessToken,
-                refreshToken
-              }
-            }
+                refreshToken,
+              },
+            },
           },
-          include: { authProviders: true }
+          include: { authProviders: true },
         });
       }
 
-      const safeUser = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        providers: user.authProviders.map(ap => ({
-          provider: ap.provider,
-          providerUserId: ap.providerUserId
-        }))
-      };
+      // Generate JWT tokens
+      const tokens = generateTokens(user.id);
 
-      return done(null, safeUser);
+      // Store refresh token in DB (hashed)
+      await rotateRefreshToken(user.id, null, tokens.refreshToken);
+
+      // Return consistent response
+      return done(null, {
+        user: { id: user.id, email: user.email, name: user.name },
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      });
     } catch (err) {
-      done(err, null);
+      return done(err, null);
     }
   };
 }
@@ -77,19 +86,30 @@ export function handleOAuthUser(provider) {
 export async function signUp(req, res, next) {
   try {
     const { email, password, name } = req.body;
-    if (!email || !password) return res.status(400).json({ error: "Missing fields" });
+    if (!email || !password)
+      return res.status(400).json({ error: "Missing fields" });
 
     if (!PASSWORD_REGEX.test(password)) {
       return res.status(400).json({
-        error: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
+        error:
+          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
       });
     }
 
-    const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+    const existing = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
     if (existing) {
-      const hasOAuth = existing.authProviders?.some(ap => ap.provider !== "email");
+      const hasOAuth = existing.authProviders?.some(
+        (ap) => ap.provider !== "email"
+      );
       if (hasOAuth) {
-        return res.status(409).json({ error: "Email registered via social login. Please sign in using your Google or GitHub account." });
+        return res
+          .status(409)
+          .json({
+            error:
+              "Email registered via social login. Please sign in using your Google or GitHub account.",
+          });
       }
       return res.status(409).json({ error: "Email already registered." });
     }
@@ -106,7 +126,7 @@ export async function signUp(req, res, next) {
           },
         },
       },
-      include: { authProviders: true }
+      include: { authProviders: true },
     });
 
     const tokens = generateTokens(user.id);
@@ -115,7 +135,7 @@ export async function signUp(req, res, next) {
     res.status(201).json({
       user: { id: user.id, email: user.email, name: user.name },
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken
+      refreshToken: tokens.refreshToken,
     });
   } catch (err) {
     next(err);
@@ -126,7 +146,8 @@ export async function signUp(req, res, next) {
 export async function signIn(req, res, next) {
   try {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: "Missing fields" });
+    if (!email || !password)
+      return res.status(400).json({ error: "Missing fields" });
 
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
@@ -134,11 +155,15 @@ export async function signIn(req, res, next) {
     });
     if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
-    const provider = user.authProviders.find(ap => ap.provider === "email");
+    const provider = user.authProviders.find((ap) => ap.provider === "email");
     if (!provider || !provider.passwordHash) {
-      const hasOAuth = user.authProviders.some(ap => ap.provider !== "email");
+      const hasOAuth = user.authProviders.some((ap) => ap.provider !== "email");
       if (hasOAuth) {
-        return res.status(401).json({ error: "Please sign in using your Google or GitHub account." });
+        return res
+          .status(401)
+          .json({
+            error: "Please sign in using your Google or GitHub account.",
+          });
       }
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -152,7 +177,7 @@ export async function signIn(req, res, next) {
     res.json({
       user: { id: user.id, email: user.email, name: user.name },
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken
+      refreshToken: tokens.refreshToken,
     });
   } catch (err) {
     next(err);
@@ -167,20 +192,18 @@ export async function refreshToken(req, res, next) {
 
     let payload;
     try {
-      payload = require("jsonwebtoken").verify(oldToken, process.env.JWT_REFRESH_SECRET);
-      if (payload.type !== "refresh") throw new Error("Invalid token type");
+      payload = verifyRefreshToken(oldToken);
     } catch {
       return res.status(401).json({ error: "Invalid or expired refresh token" });
     }
 
-    // Check if refresh token exists in DB
-    const session = await prisma.session.findUnique({ where: { sessionToken: oldToken } });
-    if (!session || session.expires < new Date()) {
+    const validSession = await findValidSession(payload.userId, oldToken);
+
+    if (!validSession) {
       await invalidateAllSessions(payload.userId);
       return res.status(401).json({ error: "Refresh token expired or reused. All sessions revoked." });
     }
 
-    // Rotate refresh token
     const tokens = generateTokens(payload.userId);
     await rotateRefreshToken(payload.userId, oldToken, tokens.refreshToken);
 
@@ -193,13 +216,25 @@ export async function refreshToken(req, res, next) {
   }
 }
 
-// Logout endpoint
+// Logout endpoint (with hashed token matching)
 export async function logout(req, res, next) {
   try {
     const { refreshToken } = req.body;
-    if (!refreshToken) return res.status(400).json({ error: "Missing refresh token" });
+    if (!refreshToken)
+      return res.status(400).json({ error: "Missing refresh token" });
 
-    await prisma.session.deleteMany({ where: { sessionToken: refreshToken } });
+    let payload;
+    try {
+      payload = verifyRefreshToken(refreshToken);
+    } catch {
+      return res.status(401).json({ error: "Invalid or expired refresh token" });
+    }
+
+    const validSession = await findValidSession(payload.userId, refreshToken);
+    if (validSession) {
+      await prisma.session.delete({ where: { id: validSession.id } });
+    }
+
     res.json({ message: "Logged out successfully." });
   } catch (err) {
     next(err);
