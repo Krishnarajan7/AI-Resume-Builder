@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as GitHubStrategy } from "passport-github2";
-import { handleOAuthUser } from "../controllers/auth.controller.js";
+import { handleOAuthUserJWT } from "../controllers/auth.controller.js";
 
 // Configure the Google Strategy
 passport.use(
@@ -12,7 +12,7 @@ passport.use(
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
       scope: ["profile", "email"],
     },
-    handleOAuthUser("google")
+    handleOAuthUserJWT("google")
   )
 );
 
@@ -25,7 +25,7 @@ passport.use(
       callbackURL: process.env.GITHUB_CALLBACK_URL,
       scope: ["user:email"],
     },
-    handleOAuthUser("github")
+    handleOAuthUserJWT("github")
   )
 );
 
