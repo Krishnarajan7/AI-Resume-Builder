@@ -11,12 +11,23 @@ datasource db {
 }
 
 // -------------------------
+// ENUM for platform roles 
+// -------------------------
+enum Role {
+  USER      // Default role for all users
+  ADMIN     // Platform management
+}
+
+// -------------------------
 // USERS MODEL (Core profile)
 // -------------------------
 model User {
   id              String         @id @default(uuid())
   email           String         @unique
   name            String?
+  // 💡 UPDATED FIELD: Change default role to USER
+  role            Role           @default(USER) 
+
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   emailVerified   DateTime?
