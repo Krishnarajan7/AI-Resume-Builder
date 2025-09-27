@@ -23,7 +23,7 @@ export function handleOAuthUserJWT(provider) {
       // Find or create user
       let user = await prisma.user.findUnique({
         where: { email },
-        include: { authProviders: true },
+        select: { id: true, email: true, name: true, role: true, authProviders: true },
       });
 
       if (user) {
@@ -49,8 +49,7 @@ export function handleOAuthUserJWT(provider) {
         user = await prisma.user.create({
           data: {
             email,
-            name:
-              profile.displayName || profile.username || email.split("@")[0],
+            name: profile.displayName || profile.username || email.split("@")[0],
             authProviders: {
               create: {
                 provider,
@@ -60,19 +59,19 @@ export function handleOAuthUserJWT(provider) {
               },
             },
           },
-          include: { authProviders: true },
+          select: { id: true, email: true, name: true, role: true },
         });
       }
 
-      // Generate JWT tokens
-      const tokens = generateTokens(user.id);
+      // Generate JWT tokens (include role)
+      const tokens = generateTokens(user.id, user.role);
 
       // Store refresh token in DB (hashed)
       await rotateRefreshToken(user.id, null, tokens.refreshToken);
 
       // Return consistent response
       return done(null, {
-        user: { id: user.id, email: user.email, name: user.name },
+        user: { id: user.id, email: user.email, name: user.name, role: user.role },
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
       });
@@ -98,18 +97,17 @@ export async function signUp(req, res, next) {
 
     const existing = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
+      include: { authProviders: true },
     });
     if (existing) {
       const hasOAuth = existing.authProviders?.some(
         (ap) => ap.provider !== "email"
       );
       if (hasOAuth) {
-        return res
-          .status(409)
-          .json({
-            error:
-              "Email registered via social login. Please sign in using your Google or GitHub account.",
-          });
+        return res.status(409).json({
+          error:
+            "Email registered via social login. Please sign in using your Google or GitHub account.",
+        });
       }
       return res.status(409).json({ error: "Email already registered." });
     }
@@ -119,6 +117,7 @@ export async function signUp(req, res, next) {
       data: {
         email: email.toLowerCase().trim(),
         name,
+        role: "USER", // Default role
         authProviders: {
           create: {
             provider: "email",
@@ -126,14 +125,14 @@ export async function signUp(req, res, next) {
           },
         },
       },
-      include: { authProviders: true },
+      select: { id: true, email: true, name: true, role: true },
     });
 
-    const tokens = generateTokens(user.id);
+    const tokens = generateTokens(user.id, user.role);
     await rotateRefreshToken(user.id, null, tokens.refreshToken);
 
     res.status(201).json({
-      user: { id: user.id, email: user.email, name: user.name },
+      user,
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     });
@@ -151,7 +150,7 @@ export async function signIn(req, res, next) {
 
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
-      include: { authProviders: true },
+      select: { id: true, email: true, name: true, role: true, authProviders: true },
     });
     if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
@@ -159,11 +158,9 @@ export async function signIn(req, res, next) {
     if (!provider || !provider.passwordHash) {
       const hasOAuth = user.authProviders.some((ap) => ap.provider !== "email");
       if (hasOAuth) {
-        return res
-          .status(401)
-          .json({
-            error: "Please sign in using your Google or GitHub account.",
-          });
+        return res.status(401).json({
+          error: "Please sign in using your Google or GitHub account.",
+        });
       }
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -171,11 +168,11 @@ export async function signIn(req, res, next) {
     const valid = await bcrypt.compare(password, provider.passwordHash);
     if (!valid) return res.status(401).json({ error: "Invalid credentials" });
 
-    const tokens = generateTokens(user.id);
+    const tokens = generateTokens(user.id, user.role);
     await rotateRefreshToken(user.id, null, tokens.refreshToken);
 
     res.json({
-      user: { id: user.id, email: user.email, name: user.name },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     });
@@ -201,22 +198,30 @@ export async function refreshToken(req, res, next) {
 
     if (!validSession) {
       await invalidateAllSessions(payload.userId);
-      return res.status(401).json({ error: "Refresh token expired or reused. All sessions revoked." });
+      return res.status(401).json({
+        error: "Refresh token expired or reused. All sessions revoked.",
+      });
     }
 
-    const tokens = generateTokens(payload.userId);
+    // Fetch role so we can embed it into the new access token
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { id: true, role: true },
+    });
+
+    const tokens = generateTokens(user.id, user.role);
     await rotateRefreshToken(payload.userId, oldToken, tokens.refreshToken);
 
     res.json({
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken
+      refreshToken: tokens.refreshToken,
     });
   } catch (err) {
     next(err);
   }
 }
 
-// Logout endpoint (with hashed token matching)
+// Logout endpoint
 export async function logout(req, res, next) {
   try {
     const { refreshToken } = req.body;
