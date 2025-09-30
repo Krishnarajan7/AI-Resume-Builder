@@ -3,7 +3,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { handleOAuthUserJWT } from "../controllers/auth.controller.js";
 
-// Configure the Google Strategy
+/* Google OAuth Strategy */
 passport.use(
   new GoogleStrategy(
     {
@@ -16,7 +16,7 @@ passport.use(
   )
 );
 
-// Configure the GitHub Strategy
+/* GitHub OAuth Strategy */
 passport.use(
   new GitHubStrategy(
     {

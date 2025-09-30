@@ -1,55 +1,56 @@
 import { verifyAccessToken } from "../utils/jwt.js";
 import prisma from "../config/db.js";
+import { AppError } from "../controllers/auth.controller.js";
 
-//Verify JWT and attach user to request
+/* JWT Authentication Middleware */
 export async function requireAuth(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "No token provided" });
+      throw new AppError("No token provided", 401);
     }
 
     const token = authHeader.split(" ")[1];
-    const payload = verifyAccessToken(token);
+    let payload;
+
+    try {
+      payload = verifyAccessToken(token);
+    } catch (err) {
+      throw new AppError("Invalid or expired token", 401);
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
       select: { id: true, email: true, name: true, role: true },
     });
 
-    if (!user) return res.status(401).json({ error: "User not found" });
+    if (!user) throw new AppError("User not found", 401);
 
     req.user = user;
     next();
   } catch (err) {
-    return res.status(401).json({ error: "Invalid or expired token", details: err.message });
+    const status = err instanceof AppError ? err.statusCode : 401;
+    return res.status(status).json({ error: err.message || "Authentication failed" });
   }
 }
 
-//Middleware factory for role-based access
+/* Role-based Authorization Middleware */
 export function authorize(...allowedRoles) {
   return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+    try {
+      if (!req.user) throw new AppError("Unauthorized", 401);
 
-    if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ error: "Forbidden: insufficient permissions" });
-    }
+      if (!allowedRoles.includes(req.user.role)) {
+        throw new AppError("Forbidden: insufficient permissions", 403);
+      }
 
-    next();
+      next();
+    } catch (err) {
+      const status = err instanceof AppError ? err.statusCode : 403;
+      return res.status(status).json({ error: err.message || "Forbidden" });
+    }
   };
 }
 
-//Shortcut for admin-only routes
-export function requireAdmin(req, res, next) {
-  if (!req.user) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  if (req.user.role !== "ADMIN") {
-    return res.status(403).json({ error: "Admins only" });
-  }
-
-  next();
-}
+/* Admin-only Shortcut Middleware */
+export const requireAdmin = authorize("ADMIN");

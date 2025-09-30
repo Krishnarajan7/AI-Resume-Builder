@@ -1,39 +1,69 @@
 import prisma from "../config/db.js";
 import bcrypt from "bcrypt";
 import { generateTokens, verifyRefreshToken } from "../utils/jwt.js";
+import { hashToken, createRandomToken } from "../utils/crypto.js";
 import {
   rotateRefreshToken,
   invalidateAllSessions,
   findValidSession,
+  createVerificationToken,
+  verifyAndConsumeVerificationToken,
 } from "../services/auth.service.js";
 
-// Password complexity regex: min 8 chars, upper, lower, number, special
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+/* AppError Class */
+export class AppError extends Error {
+  constructor(message, statusCode = 400) {
+    super(message);
+    this.statusCode = statusCode;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
 
-/**
- * Handles OAuth user sign-in/up and provider linking.
- */
+/* Password complexity */
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+const SIMPLE_PASSWORD_ERR = "Password does not meet complexity requirements.";
+
+/* Cookie options generator*/
+function cookieOptions() {
+  const isProd = process.env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30d
+    path: "/",
+  };
+}
+
+/* Helper to set refresh cookie */
+function setRefreshCookie(res, refreshToken) {
+  res.cookie("refreshToken", refreshToken, cookieOptions());
+}
+
+/* OAuth Handler for Passport*/
 export function handleOAuthUserJWT(provider) {
   return async (accessToken, refreshToken, profile, done) => {
     try {
-      const emailObj = profile.emails?.[0];
-      const email = emailObj?.value?.toLowerCase().trim();
-      if (!email) return done(new Error("No email from OAuth provider"), null);
+      const email = profile.emails?.[0]?.value?.toLowerCase().trim();
+      if (!email)
+        return done(new AppError("No email from OAuth provider", 400), null);
 
-      // Find or create user
       let user = await prisma.user.findUnique({
         where: { email },
-        select: { id: true, email: true, name: true, role: true, authProviders: true },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          authProviders: true,
+        },
       });
 
       if (user) {
-        // Upsert provider
+        // Upsert provider info
         await prisma.authProvider.upsert({
           where: {
-            provider_providerUserId: {
-              provider,
-              providerUserId: profile.id,
-            },
+            provider_providerUserId: { provider, providerUserId: profile.id },
           },
           update: { accessToken, refreshToken },
           create: {
@@ -45,11 +75,12 @@ export function handleOAuthUserJWT(provider) {
           },
         });
       } else {
-        // Create new user with provider
+        // Create new user
         user = await prisma.user.create({
           data: {
             email,
-            name: profile.displayName || profile.username || email.split("@")[0],
+            name:
+              profile.displayName || profile.username || email.split("@")[0],
             authProviders: {
               create: {
                 provider,
@@ -63,15 +94,11 @@ export function handleOAuthUserJWT(provider) {
         });
       }
 
-      // Generate JWT tokens (include role)
       const tokens = generateTokens(user.id, user.role);
+      await rotateRefreshToken(user.id, null, hashToken(tokens.refreshToken));
 
-      // Store refresh token in DB (hashed)
-      await rotateRefreshToken(user.id, null, tokens.refreshToken);
-
-      // Return consistent response
       return done(null, {
-        user: { id: user.id, email: user.email, name: user.name, role: user.role },
+        user,
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
       });
@@ -81,167 +108,256 @@ export function handleOAuthUserJWT(provider) {
   };
 }
 
-// Local signup
+/* Sign Up*/
 export async function signUp(req, res, next) {
   try {
     const { email, password, name } = req.body;
     if (!email || !password)
-      return res.status(400).json({ error: "Missing fields" });
-
-    if (!PASSWORD_REGEX.test(password)) {
-      return res.status(400).json({
-        error:
-          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
-      });
-    }
+      throw new AppError("Missing email or password", 400);
+    if (!PASSWORD_REGEX.test(password))
+      throw new AppError(SIMPLE_PASSWORD_ERR, 400);
 
     const existing = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
       include: { authProviders: true },
     });
+
     if (existing) {
-      const hasOAuth = existing.authProviders?.some(
+      const hasOAuth = existing.authProviders.some(
         (ap) => ap.provider !== "email"
       );
-      if (hasOAuth) {
-        return res.status(409).json({
-          error:
-            "Email registered via social login. Please sign in using your Google or GitHub account.",
-        });
-      }
-      return res.status(409).json({ error: "Email already registered." });
+      if (hasOAuth)
+        throw new AppError(
+          "Email registered via social login. Use social sign-in.",
+          409
+        );
+      throw new AppError("Email already registered.", 409);
     }
 
-    const hash = await bcrypt.hash(password, 12);
+    const hashed = await bcrypt.hash(password, 12);
+
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase().trim(),
         name,
-        role: "USER", // Default role
-        authProviders: {
-          create: {
-            provider: "email",
-            passwordHash: hash,
-          },
-        },
+        role: "USER",
+        authProviders: { create: { provider: "email", passwordHash: hashed } },
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        emailVerified: true,
+      },
+    });
+
+    const rawVerifyToken = createRandomToken(32);
+    const hashedVerify = hashToken(rawVerifyToken);
+    await createVerificationToken(user.email, hashedVerify);
+
+    const tokens = generateTokens(user.id, user.role);
+    await rotateRefreshToken(user.id, null, hashToken(tokens.refreshToken));
+    setRefreshCookie(res, tokens.refreshToken);
+
+    return res.status(201).json({
+      user,
+      accessToken: tokens.accessToken,
+      verifyToken:
+        process.env.NODE_ENV === "production" ? undefined : rawVerifyToken,
+      message: "User created. Verify your email to activate account.",
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+/* Protected Admin Creation
+   Only existing ADMINs can create */
+export async function createAdmin(req, res, next) {
+  try {
+    const { email, password, name } = req.body;
+
+    if (!email || !password || !name) throw new AppError("Missing fields", 400);
+
+    const existing = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
+    if (existing) throw new AppError("Email already registered", 409);
+
+    const hashed = await bcrypt.hash(password, 12);
+
+    const adminUser = await prisma.user.create({
+      data: {
+        email: email.toLowerCase().trim(),
+        name,
+        role: "ADMIN", // force admin
+        authProviders: { create: { provider: "email", passwordHash: hashed } },
       },
       select: { id: true, email: true, name: true, role: true },
     });
 
-    const tokens = generateTokens(user.id, user.role);
-    await rotateRefreshToken(user.id, null, tokens.refreshToken);
-
-    res.status(201).json({
-      user,
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-    });
+    return res
+      .status(201)
+      .json({ user: adminUser, message: "Admin user created successfully" });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 }
 
-// Local signin
+/* Sign In */
 export async function signIn(req, res, next) {
   try {
     const { email, password } = req.body;
     if (!email || !password)
-      return res.status(400).json({ error: "Missing fields" });
+      throw new AppError("Missing email or password", 400);
 
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
-      select: { id: true, email: true, name: true, role: true, authProviders: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        emailVerified: true,
+        authProviders: true,
+      },
     });
-    if (!user) return res.status(401).json({ error: "Invalid credentials" });
+
+    if (!user) throw new AppError("Invalid credentials", 401);
 
     const provider = user.authProviders.find((ap) => ap.provider === "email");
+    if (provider && !user.emailVerified)
+      throw new AppError("Email not verified.", 403);
+
     if (!provider || !provider.passwordHash) {
       const hasOAuth = user.authProviders.some((ap) => ap.provider !== "email");
-      if (hasOAuth) {
-        return res.status(401).json({
-          error: "Please sign in using your Google or GitHub account.",
-        });
-      }
-      return res.status(401).json({ error: "Invalid credentials" });
+      if (hasOAuth)
+        throw new AppError("Please sign in using social login.", 401);
+      throw new AppError("Invalid credentials", 401);
     }
 
     const valid = await bcrypt.compare(password, provider.passwordHash);
-    if (!valid) return res.status(401).json({ error: "Invalid credentials" });
+    if (!valid) throw new AppError("Invalid credentials", 401);
 
     const tokens = generateTokens(user.id, user.role);
-    await rotateRefreshToken(user.id, null, tokens.refreshToken);
+    await rotateRefreshToken(user.id, null, hashToken(tokens.refreshToken));
+    setRefreshCookie(res, tokens.refreshToken);
 
-    res.json({
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+    return res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
     });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 }
 
-// Refresh token endpoint with rotation & reuse detection
+/* Refresh Token */
 export async function refreshToken(req, res, next) {
   try {
-    const { refreshToken: oldToken } = req.body;
-    if (!oldToken) return res.status(400).json({ error: "Missing refresh token" });
+    const rawToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    if (!rawToken) throw new AppError("Missing refresh token", 400);
 
-    let payload;
-    try {
-      payload = verifyRefreshToken(oldToken);
-    } catch {
-      return res.status(401).json({ error: "Invalid or expired refresh token" });
-    }
+    const payload = verifyRefreshToken(rawToken);
+    const hashedOld = hashToken(rawToken);
 
-    const validSession = await findValidSession(payload.userId, oldToken);
-
+    const validSession = await findValidSession(payload.userId, hashedOld);
     if (!validSession) {
       await invalidateAllSessions(payload.userId);
-      return res.status(401).json({
-        error: "Refresh token expired or reused. All sessions revoked.",
-      });
+      throw new AppError(
+        "Refresh token expired or reused. All sessions revoked.",
+        401
+      );
     }
 
-    // Fetch role so we can embed it into the new access token
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
-      select: { id: true, role: true },
+      select: { id: true, role: true, email: true, name: true },
     });
+    if (!user) throw new AppError("User not found", 401);
 
     const tokens = generateTokens(user.id, user.role);
-    await rotateRefreshToken(payload.userId, oldToken, tokens.refreshToken);
+    await rotateRefreshToken(
+      user.id,
+      hashedOld,
+      hashToken(tokens.refreshToken)
+    );
+    setRefreshCookie(res, tokens.refreshToken);
 
-    res.json({
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-    });
+    return res.json({ user, accessToken: tokens.accessToken });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 }
 
-// Logout endpoint
+/* Logout */
 export async function logout(req, res, next) {
   try {
-    const { refreshToken } = req.body;
-    if (!refreshToken)
-      return res.status(400).json({ error: "Missing refresh token" });
+    const rawToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    if (!rawToken) throw new AppError("Missing refresh token", 400);
 
     let payload;
     try {
-      payload = verifyRefreshToken(refreshToken);
+      payload = verifyRefreshToken(rawToken);
     } catch {
-      return res.status(401).json({ error: "Invalid or expired refresh token" });
+      res.clearCookie("refreshToken", cookieOptions());
+      throw new AppError("Invalid or expired refresh token", 401);
     }
 
-    const validSession = await findValidSession(payload.userId, refreshToken);
-    if (validSession) {
+    const hashed = hashToken(rawToken);
+    const validSession = await findValidSession(payload.userId, hashed);
+    if (validSession)
       await prisma.session.delete({ where: { id: validSession.id } });
-    }
 
-    res.json({ message: "Logged out successfully." });
+    res.clearCookie("refreshToken", cookieOptions());
+    return res.json({ message: "Logged out successfully." });
   } catch (err) {
-    next(err);
+    return next(err);
+  }
+}
+
+/* Email Verification */
+export async function requestEmailVerification(req, res, next) {
+  try {
+    const { email } = req.body;
+    if (!email) throw new AppError("Missing email", 400);
+
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
+    if (!user) throw new AppError("User not found", 404);
+
+    const rawToken = createRandomToken(32);
+    await createVerificationToken(user.email, hashToken(rawToken));
+
+    const response = { message: "Verification email sent (if configured)" };
+    if (process.env.NODE_ENV !== "production") response.debugToken = rawToken;
+
+    return res.json(response);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function verifyEmail(req, res, next) {
+  try {
+    const { email, token } = req.body;
+    if (!email || !token) throw new AppError("Missing email or token", 400);
+
+    const user = await verifyAndConsumeVerificationToken(
+      email.toLowerCase().trim(),
+      hashToken(token)
+    );
+    if (!user) throw new AppError("Invalid or expired token", 400);
+
+    return res.json({ message: "Email verified", user });
+  } catch (err) {
+    return next(err);
   }
 }
