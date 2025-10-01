@@ -1,6 +1,7 @@
 import express from "express";
 import passport from "./src/config/passport.js";
 import authRoutes from "./src/routes/auth.routes.js";
+import profileRoutes from "./src/routes/profile.routes.js";
 import { errorHandler } from "./src/middleware/errorHandler.js";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -39,8 +40,9 @@ app.get("/", (req, res) => {
     });
 });
 
-// Auth routes
+// routes
 app.use("/auth", authRoutes);
+app.use("/api/v1/profile", profileRoutes);
 
 // Error handler
 app.use(errorHandler);
