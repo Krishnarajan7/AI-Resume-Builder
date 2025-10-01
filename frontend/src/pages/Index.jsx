@@ -9,11 +9,14 @@ import { MobileNavigation } from "@/components/MobileNavigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileDown, Share2, Wand2 } from "lucide-react";
+import { FileDown, Share2, Wand2, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+
 
 const Index = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [activePanel, setActivePanel] = useState("editor");
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
   const [resumeData, setResumeData] = useState({});
@@ -87,6 +90,10 @@ const Index = () => {
             <Button variant="outline" size="sm" className="gap-2 hover-scale" onClick={handleExport}>
               <FileDown className="w-4 h-4" />
               Export
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2 hover-scale" onClick={() => navigate("/profile")}>
+              <User className="w-4 h-4" />
+              Profile
             </Button>
             <ThemeToggle />
           </div>
