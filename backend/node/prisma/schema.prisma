@@ -19,6 +19,15 @@ enum Role {
 }
 
 // -------------------------
+// ENUM for resume status
+// -------------------------
+enum ResumeStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+// -------------------------
 // USERS MODEL (Core profile)
 // -------------------------
 model User {
@@ -48,6 +57,7 @@ model User {
   // Relations
   authProviders   AuthProvider[]
   sessions        Session[]
+  resumes         Resume[]        // 👈 user can have multiple resumes
 }
 
 // -------------------------
@@ -84,7 +94,6 @@ model Session {
   @@index([userId])
 }
 
-
 // -------------------------
 // VERIFICATION TOKENS MODEL
 // -------------------------
@@ -104,4 +113,31 @@ enum Provider {
   email
   google
   github
+}
+
+// -------------------------
+// RESUMES MODEL 
+// -------------------------
+model Resume {
+  id             String        @id @default(uuid())
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+
+  title          String        // e.g. "Frontend Engineer Resume"
+  content        Json          // structured JSON: { education, experience, skills, projects }
+  status         ResumeStatus  @default(DRAFT)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // ---------------- AI Enhanced Fields ----------------
+  tailoredFor      String?      
+  aiGenerated      Boolean      @default(false)
+  summary          String?      
+  bullets          Json?        
+  suggestedSkills  Json?        
+  enhancedSections Json?        
+
+  @@index([userId])
+  @@unique([id, userId], name: "id_userId") // ✅ composite unique key for ownership
 }

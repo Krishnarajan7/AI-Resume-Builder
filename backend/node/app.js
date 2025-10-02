@@ -2,6 +2,7 @@ import express from "express";
 import passport from "./src/config/passport.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import profileRoutes from "./src/routes/profile.routes.js";
+import resumeRoutes from "./src/routes/resume.routes.js"; 
 import { errorHandler } from "./src/middleware/errorHandler.js";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -10,6 +11,8 @@ import cookieParser from "cookie-parser";
 dotenv.config();
 
 const app = express();
+
+// Middleware
 app.use(cookieParser());
 
 const allowedOrigins = [
@@ -19,32 +22,34 @@ const allowedOrigins = [
 ];
 
 app.use(
-    cors({
-        origin: (origin, callback) => {
-        if (!origin) return callback(null, true); // Postman / server-to-server
-        if (allowedOrigins.includes(origin)) return callback(null, true);
-        return callback(new Error("Not allowed by CORS"), false);
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // Postman / server-to-server
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"), false);
     },
-    credentials: true, // Allow cookies
-    })
+    credentials: true, // Allow cookies to be sent
+  })
 );
 
 app.use(express.json());
 app.use(passport.initialize());
 
+// Health check / root endpoint
 app.get("/", (req, res) => {
-    res.status(200).json({
-        message: "Welcome to the AI Resume Builder API!",
-        status: "Online",
-        api_version: "1.0",
-    });
+  res.status(200).json({
+    message: "Welcome to the AI Resume Builder API!",
+    status: "Online",
+    api_version: "1.0",
+  });
 });
 
-// routes
+// Routes
 app.use("/auth", authRoutes);
 app.use("/api/v1/profile", profileRoutes);
+app.use("/api/v1/resumes", resumeRoutes); 
 
-// Error handler
+// Global error handler
 app.use(errorHandler);
 
 export default app;
