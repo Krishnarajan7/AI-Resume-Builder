@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   ChevronDown,
-  ChevronRight,
   User,
   FileText,
   Briefcase,
@@ -26,6 +25,15 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AddEditModal } from "./AddEditModal";
+import {
+  createResume,
+  updateResume,
+  getResumeById,
+  enhanceSummary,
+  suggestSkills,
+  improveBullets,
+  enhanceSections,
+} from "@/api/resume";
 
 const AIButton = ({ onClick, children }) => (
   <Button
@@ -39,9 +47,10 @@ const AIButton = ({ onClick, children }) => (
   </Button>
 );
 
-export const ResumeEditor = ({ onDataChange }) => {
+export const ResumeEditor = () => {
   const { toast } = useToast();
 
+  const [resumeId, setResumeId] = useState(null);
   const [modalType, setModalType] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -73,10 +82,43 @@ export const ResumeEditor = ({ onDataChange }) => {
   const [skills, setSkills] = useState([]);
   const [customFields, setCustomFields] = useState([]);
 
-  // Update parent component when data changes
-  const handleDataUpdate = React.useCallback(() => {
-    if (onDataChange) {
-      onDataChange({
+  // Fetch resume data on mount (if editing an existing resume)
+  useEffect(() => {
+    const fetchResume = async () => {
+      try {
+        // Assuming resumeId is passed via URL or context; for now, we'll check local storage
+        const storedResumeId = localStorage.getItem("currentResumeId");
+        if (storedResumeId) {
+          const resume = await getResumeById(storedResumeId);
+          setResumeId(storedResumeId);
+          setPersonalInfo(resume.personalInfo || {});
+          setSummary(resume.summary || "");
+          setExperiences(resume.experiences || []);
+          setEducation(resume.education || []);
+          setProjects(resume.projects || []);
+          setCertifications(resume.certifications || []);
+          setSkills(resume.skills || []);
+          setCustomFields(resume.customFields || []);
+          toast({
+            title: "Resume Loaded",
+            description: "Resume data loaded successfully!",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    };
+    fetchResume();
+  }, [toast]);
+
+  // Save or update resume to backend
+  const saveResume = async () => {
+    try {
+      const resumeData = {
         personalInfo,
         summary,
         experiences,
@@ -85,8 +127,48 @@ export const ResumeEditor = ({ onDataChange }) => {
         certifications,
         skills,
         customFields,
+      };
+      if (resumeId) {
+        await updateResume(resumeId, resumeData);
+        toast({
+          title: "Resume Updated",
+          description: "Resume saved successfully!",
+        });
+      } else {
+        const response = await createResume(resumeData);
+        setResumeId(response.id);
+        localStorage.setItem("currentResumeId", response.id);
+        toast({
+          title: "Resume Created",
+          description: "Resume created successfully!",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
       });
     }
+  };
+
+  // Update backend when data changes
+  useEffect(() => {
+    const debounceSave = setTimeout(() => {
+      if (
+        personalInfo.fullName ||
+        summary ||
+        experiences.length > 0 ||
+        education.length > 0 ||
+        projects.length > 0 ||
+        certifications.length > 0 ||
+        skills.length > 0 ||
+        customFields.length > 0
+      ) {
+        saveResume();
+      }
+    }, 1000); // Debounce to avoid rapid API calls
+    return () => clearTimeout(debounceSave);
   }, [
     personalInfo,
     summary,
@@ -96,12 +178,7 @@ export const ResumeEditor = ({ onDataChange }) => {
     certifications,
     skills,
     customFields,
-    onDataChange,
   ]);
-
-  React.useEffect(() => {
-    handleDataUpdate();
-  }, [handleDataUpdate]);
 
   // Modal handlers
   const openAddModal = (type) => {
@@ -130,7 +207,10 @@ export const ResumeEditor = ({ onDataChange }) => {
             prev.map((item) => (item.id === editData.id ? data : item))
           );
         } else {
-          setExperiences((prev) => [...prev, data]);
+          setExperiences((prev) => [
+            ...prev,
+            { ...data, id: Date.now().toString() },
+          ]);
         }
         break;
       case "education":
@@ -139,7 +219,10 @@ export const ResumeEditor = ({ onDataChange }) => {
             prev.map((item) => (item.id === editData.id ? data : item))
           );
         } else {
-          setEducation((prev) => [...prev, data]);
+          setEducation((prev) => [
+            ...prev,
+            { ...data, id: Date.now().toString() },
+          ]);
         }
         break;
       case "project":
@@ -148,7 +231,10 @@ export const ResumeEditor = ({ onDataChange }) => {
             prev.map((item) => (item.id === editData.id ? data : item))
           );
         } else {
-          setProjects((prev) => [...prev, data]);
+          setProjects((prev) => [
+            ...prev,
+            { ...data, id: Date.now().toString() },
+          ]);
         }
         break;
       case "certification":
@@ -157,7 +243,10 @@ export const ResumeEditor = ({ onDataChange }) => {
             prev.map((item) => (item.id === editData.id ? data : item))
           );
         } else {
-          setCertifications((prev) => [...prev, data]);
+          setCertifications((prev) => [
+            ...prev,
+            { ...data, id: Date.now().toString() },
+          ]);
         }
         break;
       case "skill":
@@ -174,10 +263,14 @@ export const ResumeEditor = ({ onDataChange }) => {
             prev.map((item) => (item.id === editData.id ? data : item))
           );
         } else {
-          setCustomFields((prev) => [...prev, data]);
+          setCustomFields((prev) => [
+            ...prev,
+            { ...data, id: Date.now().toString() },
+          ]);
         }
         break;
     }
+    closeModal();
   };
 
   const toggleSection = (section) => {
@@ -187,101 +280,136 @@ export const ResumeEditor = ({ onDataChange }) => {
     }));
   };
 
-  const handleAIAction = (action, field) => {
-    toast({
-      title: "AI Feature",
-      description: `${action} functionality coming soon!`,
-    });
+  // AI Action Handlers
+  const aiActionMap = {
+    "enhance-summary": {
+      apiCall: (payload) => enhanceSummary(payload),
+      successHandler: ({ enhanced }) => {
+        setSummary(enhanced);
+        toast({
+          title: "Summary Enhanced",
+          description: "Your professional summary has been enhanced!",
+        });
+      },
+      preparePayload: () => ({ summary }),
+    },
+
+    "suggest-skills": {
+      apiCall: (payload) => suggestSkills(payload),
+      successHandler: ({ suggested }) => {
+        setSkills((prev) => [...prev, ...suggested]);
+        toast({
+          title: "Skills Suggested",
+          description: "New skills have been suggested and added!",
+        });
+      },
+      preparePayload: () => ({ currentSkills: skills }),
+    },
+
+    "improve-bullets": {
+      apiCall: (payload) => improveBullets(payload),
+      successHandler: ({ improved }) => {
+        setExperiences(improved);
+        toast({
+          title: "Bullets Improved",
+          description: "Your experience bullets have been improved!",
+        });
+      },
+      preparePayload: () => ({ bullets: experiences }),
+    },
+
+    "optimize-all": {
+      apiCall: (payload) => enhanceSections(payload),
+      successHandler: ({ enhancedSections }) => {
+        const sectionMap = {
+          personalInfo: setPersonalInfo,
+          summary: setSummary,
+          experiences: setExperiences,
+          education: setEducation,
+          projects: setProjects,
+          certifications: setCertifications,
+          skills: setSkills,
+          customFields: setCustomFields,
+        };
+
+        enhancedSections.forEach(({ section, content }) => {
+          if (sectionMap[section]) sectionMap[section](content);
+        });
+
+        toast({
+          title: "Resume Optimized",
+          description: "All sections have been optimized!",
+        });
+      },
+      preparePayload: () => ({
+        sections: [
+          { section: "personalInfo", content: personalInfo },
+          { section: "summary", content: summary },
+          { section: "experiences", content: experiences },
+          { section: "education", content: education },
+          { section: "projects", content: projects },
+          { section: "certifications", content: certifications },
+          { section: "skills", content: skills },
+          { section: "customFields", content: customFields },
+        ],
+      }),
+    },
   };
 
-  const addExperience = () => {
-    const newExp = {
-      id: Date.now().toString(),
-      jobTitle: "",
-      company: "",
-      startDate: "",
-      endDate: "",
-      current: false,
-      description: "",
-    };
-    setExperiences((prev) => [...prev, newExp]);
-    setOpenSections((prev) => ({ ...prev, experience: true }));
-    toast({
-      title: "Experience Added",
-      description: "New work experience section added successfully!",
-    });
-  };
+  const handleAIAction = async (action) => {
+    try {
+      const aiConfig = aiActionMap[action];
+      if (!aiConfig) {
+        toast({
+          title: "AI Feature",
+          description: `${action} functionality not implemented!`,
+          variant: "destructive",
+        });
+        return;
+      }
 
-  const addEducation = () => {
-    const newEdu = {
-      id: Date.now().toString(),
-      degree: "",
-      institution: "",
-      startYear: "",
-      endYear: "",
-    };
-    setEducation((prev) => [...prev, newEdu]);
-    setOpenSections((prev) => ({ ...prev, education: true }));
-    toast({
-      title: "Education Added",
-      description: "New education section added successfully!",
-    });
-  };
-
-  const addProject = () => {
-    const newProject = {
-      id: Date.now().toString(),
-      projectName: "",
-      projectDescription: "",
-      technologies: "",
-      startDate: "",
-      endDate: "",
-    };
-    setProjects((prev) => [...prev, newProject]);
-    setOpenSections((prev) => ({ ...prev, projects: true }));
-    toast({
-      title: "Project Added",
-      description: "New project section added successfully!",
-    });
-  };
-
-  const addCertification = () => {
-    const newCert = {
-      id: Date.now().toString(),
-      certName: "",
-      issuingOrg: "",
-      issueDate: "",
-    };
-    setCertifications((prev) => [...prev, newCert]);
-    setOpenSections((prev) => ({ ...prev, certifications: true }));
-    toast({
-      title: "Certification Added",
-      description: "New certification section added successfully!",
-    });
-  };
-
-  const removeItem = (id, type) => {
-    switch (type) {
-      case "experience":
-        setExperiences((prev) => prev.filter((item) => item.id !== id));
-        break;
-      case "education":
-        setEducation((prev) => prev.filter((item) => item.id !== id));
-        break;
-      case "project":
-        setProjects((prev) => prev.filter((item) => item.id !== id));
-        break;
-      case "certification":
-        setCertifications((prev) => prev.filter((item) => item.id !== id));
-        break;
-      case "custom":
-        setCustomFields((prev) => prev.filter((item) => item.id !== id));
-        break;
+      const payload = aiConfig.preparePayload();
+      const response = await aiConfig.apiCall(payload);
+      aiConfig.successHandler(response);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
-    toast({
-      title: "Item Removed",
-      description: "Section removed successfully!",
-    });
+  };
+
+  const removeItem = async (id, type) => {
+    try {
+      switch (type) {
+        case "experience":
+          setExperiences((prev) => prev.filter((item) => item.id !== id));
+          break;
+        case "education":
+          setEducation((prev) => prev.filter((item) => item.id !== id));
+          break;
+        case "project":
+          setProjects((prev) => prev.filter((item) => item.id !== id));
+          break;
+        case "certification":
+          setCertifications((prev) => prev.filter((item) => item.id !== id));
+          break;
+        case "custom":
+          setCustomFields((prev) => prev.filter((item) => item.id !== id));
+          break;
+      }
+      toast({
+        title: "Item Removed",
+        description: "Section removed successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const sections = [
@@ -305,7 +433,7 @@ export const ResumeEditor = ({ onDataChange }) => {
                     fullName: e.target.value,
                   }))
                 }
-                placeholder="dummy naanthan"
+                placeholder="John Doe"
                 className="h-8 text-sm"
               />
             </div>
@@ -323,7 +451,7 @@ export const ResumeEditor = ({ onDataChange }) => {
                     email: e.target.value,
                   }))
                 }
-                placeholder="naanthardummy@gmail.com"
+                placeholder="john.doe@example.com"
                 className="h-8 text-sm"
               />
             </div>
@@ -417,7 +545,7 @@ export const ResumeEditor = ({ onDataChange }) => {
                 Summary
               </Label>
               <div className="flex gap-1">
-                <AIButton onClick={() => handleAIAction("enhance", "summary")}>
+                <AIButton onClick={() => handleAIAction("enhance-summary")}>
                   Enhance
                 </AIButton>
               </div>
