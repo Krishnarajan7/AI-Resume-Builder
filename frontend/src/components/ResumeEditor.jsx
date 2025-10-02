@@ -1,32 +1,36 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { 
-  ChevronDown, 
-  ChevronRight, 
-  User, 
-  FileText, 
-  Briefcase, 
-  GraduationCap, 
-  Code, 
-  FolderOpen, 
+import {
+  ChevronDown,
+  ChevronRight,
+  User,
+  FileText,
+  Briefcase,
+  GraduationCap,
+  Code,
+  FolderOpen,
   Award,
   Sparkles,
   Trash2,
   Plus,
-  Edit
+  Edit,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AddEditModal } from "./AddEditModal";
 
 const AIButton = ({ onClick, children }) => (
-  <Button 
-    size="sm" 
-    variant="outline" 
+  <Button
+    size="sm"
+    variant="outline"
     className="ai-button-subtle h-7 text-xs gap-1.5 whitespace-nowrap flex-shrink-0"
     onClick={onClick}
   >
@@ -35,14 +39,13 @@ const AIButton = ({ onClick, children }) => (
   </Button>
 );
 
-
 export const ResumeEditor = ({ onDataChange }) => {
   const { toast } = useToast();
-  
+
   const [modalType, setModalType] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
-  
+
   const [openSections, setOpenSections] = useState({
     personal: true,
     summary: true,
@@ -59,7 +62,7 @@ export const ResumeEditor = ({ onDataChange }) => {
     phone: "",
     location: "",
     linkedin: "",
-    website: ""
+    website: "",
   });
 
   const [summary, setSummary] = useState("");
@@ -81,10 +84,20 @@ export const ResumeEditor = ({ onDataChange }) => {
         projects,
         certifications,
         skills,
-        customFields
+        customFields,
       });
     }
-  }, [personalInfo, summary, experiences, education, projects, certifications, skills, customFields, onDataChange]);
+  }, [
+    personalInfo,
+    summary,
+    experiences,
+    education,
+    projects,
+    certifications,
+    skills,
+    customFields,
+    onDataChange,
+  ]);
 
   React.useEffect(() => {
     handleDataUpdate();
@@ -111,54 +124,66 @@ export const ResumeEditor = ({ onDataChange }) => {
 
   const handleModalSave = (data) => {
     switch (modalType) {
-      case 'experience':
+      case "experience":
         if (editData) {
-          setExperiences(prev => prev.map(item => item.id === editData.id ? data : item));
+          setExperiences((prev) =>
+            prev.map((item) => (item.id === editData.id ? data : item))
+          );
         } else {
-          setExperiences(prev => [...prev, data]);
+          setExperiences((prev) => [...prev, data]);
         }
         break;
-      case 'education':
+      case "education":
         if (editData) {
-          setEducation(prev => prev.map(item => item.id === editData.id ? data : item));
+          setEducation((prev) =>
+            prev.map((item) => (item.id === editData.id ? data : item))
+          );
         } else {
-          setEducation(prev => [...prev, data]);
+          setEducation((prev) => [...prev, data]);
         }
         break;
-      case 'project':
+      case "project":
         if (editData) {
-          setProjects(prev => prev.map(item => item.id === editData.id ? data : item));
+          setProjects((prev) =>
+            prev.map((item) => (item.id === editData.id ? data : item))
+          );
         } else {
-          setProjects(prev => [...prev, data]);
+          setProjects((prev) => [...prev, data]);
         }
         break;
-      case 'certification':
+      case "certification":
         if (editData) {
-          setCertifications(prev => prev.map(item => item.id === editData.id ? data : item));
+          setCertifications((prev) =>
+            prev.map((item) => (item.id === editData.id ? data : item))
+          );
         } else {
-          setCertifications(prev => [...prev, data]);
+          setCertifications((prev) => [...prev, data]);
         }
         break;
-      case 'skill':
+      case "skill":
         if (data.skillName) {
-          const skillToAdd = `${data.skillName}${data.proficiency ? ` (${data.proficiency})` : ''}`;
-          setSkills(prev => [...prev, skillToAdd]);
+          const skillToAdd = `${data.skillName}${
+            data.proficiency ? ` (${data.proficiency})` : ""
+          }`;
+          setSkills((prev) => [...prev, skillToAdd]);
         }
         break;
-      case 'custom':
+      case "custom":
         if (editData) {
-          setCustomFields(prev => prev.map(item => item.id === editData.id ? data : item));
+          setCustomFields((prev) =>
+            prev.map((item) => (item.id === editData.id ? data : item))
+          );
         } else {
-          setCustomFields(prev => [...prev, data]);
+          setCustomFields((prev) => [...prev, data]);
         }
         break;
     }
   };
 
   const toggleSection = (section) => {
-    setOpenSections(prev => ({
+    setOpenSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
@@ -177,10 +202,10 @@ export const ResumeEditor = ({ onDataChange }) => {
       startDate: "",
       endDate: "",
       current: false,
-      description: ""
+      description: "",
     };
-    setExperiences(prev => [...prev, newExp]);
-    setOpenSections(prev => ({ ...prev, experience: true }));
+    setExperiences((prev) => [...prev, newExp]);
+    setOpenSections((prev) => ({ ...prev, experience: true }));
     toast({
       title: "Experience Added",
       description: "New work experience section added successfully!",
@@ -193,10 +218,10 @@ export const ResumeEditor = ({ onDataChange }) => {
       degree: "",
       institution: "",
       startYear: "",
-      endYear: ""
+      endYear: "",
     };
-    setEducation(prev => [...prev, newEdu]);
-    setOpenSections(prev => ({ ...prev, education: true }));
+    setEducation((prev) => [...prev, newEdu]);
+    setOpenSections((prev) => ({ ...prev, education: true }));
     toast({
       title: "Education Added",
       description: "New education section added successfully!",
@@ -210,10 +235,10 @@ export const ResumeEditor = ({ onDataChange }) => {
       projectDescription: "",
       technologies: "",
       startDate: "",
-      endDate: ""
+      endDate: "",
     };
-    setProjects(prev => [...prev, newProject]);
-    setOpenSections(prev => ({ ...prev, projects: true }));
+    setProjects((prev) => [...prev, newProject]);
+    setOpenSections((prev) => ({ ...prev, projects: true }));
     toast({
       title: "Project Added",
       description: "New project section added successfully!",
@@ -225,10 +250,10 @@ export const ResumeEditor = ({ onDataChange }) => {
       id: Date.now().toString(),
       certName: "",
       issuingOrg: "",
-      issueDate: ""
+      issueDate: "",
     };
-    setCertifications(prev => [...prev, newCert]);
-    setOpenSections(prev => ({ ...prev, certifications: true }));
+    setCertifications((prev) => [...prev, newCert]);
+    setOpenSections((prev) => ({ ...prev, certifications: true }));
     toast({
       title: "Certification Added",
       description: "New certification section added successfully!",
@@ -237,20 +262,20 @@ export const ResumeEditor = ({ onDataChange }) => {
 
   const removeItem = (id, type) => {
     switch (type) {
-      case 'experience':
-        setExperiences(prev => prev.filter(item => item.id !== id));
+      case "experience":
+        setExperiences((prev) => prev.filter((item) => item.id !== id));
         break;
-      case 'education':
-        setEducation(prev => prev.filter(item => item.id !== id));
+      case "education":
+        setEducation((prev) => prev.filter((item) => item.id !== id));
         break;
-      case 'project':
-        setProjects(prev => prev.filter(item => item.id !== id));
+      case "project":
+        setProjects((prev) => prev.filter((item) => item.id !== id));
         break;
-      case 'certification':
-        setCertifications(prev => prev.filter(item => item.id !== id));
+      case "certification":
+        setCertifications((prev) => prev.filter((item) => item.id !== id));
         break;
-      case 'custom':
-        setCustomFields(prev => prev.filter(item => item.id !== id));
+      case "custom":
+        setCustomFields((prev) => prev.filter((item) => item.id !== id));
         break;
     }
     toast({
@@ -268,75 +293,117 @@ export const ResumeEditor = ({ onDataChange }) => {
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-3">
             <div className="field-group">
-              <Label htmlFor="fullName" className="text-xs">Full Name</Label>
+              <Label htmlFor="fullName" className="text-xs">
+                Full Name
+              </Label>
               <Input
                 id="fullName"
                 value={personalInfo.fullName}
-                onChange={(e) => setPersonalInfo(prev => ({ ...prev, fullName: e.target.value }))}
+                onChange={(e) =>
+                  setPersonalInfo((prev) => ({
+                    ...prev,
+                    fullName: e.target.value,
+                  }))
+                }
                 placeholder="dummy naanthan"
                 className="h-8 text-sm"
               />
             </div>
             <div className="field-group">
-              <Label htmlFor="email" className="text-xs">Email</Label>
+              <Label htmlFor="email" className="text-xs">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
                 value={personalInfo.email}
-                onChange={(e) => setPersonalInfo(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) =>
+                  setPersonalInfo((prev) => ({
+                    ...prev,
+                    email: e.target.value,
+                  }))
+                }
                 placeholder="naanthardummy@gmail.com"
                 className="h-8 text-sm"
               />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 gap-3">
-              <div className="field-group">
-                <Label htmlFor="phone" className="text-xs">Phone Number</Label>
-                <Input
-                  id="phone"
-                  value={personalInfo.phone}
-                  onChange={(e) => setPersonalInfo(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="+1 (555) 123-4567"
-                  className="h-8 text-sm"
-                />
-              </div>
-              <div className="field-group">
-                <Label htmlFor="location" className="text-xs">Location</Label>
-                <Input
-                  id="location"
-                  value={personalInfo.location}
-                  onChange={(e) => setPersonalInfo(prev => ({ ...prev, location: e.target.value }))}
-                  placeholder="New York, NY"
-                  className="h-8 text-sm"
-                />
-              </div>
+            <div className="field-group">
+              <Label htmlFor="phone" className="text-xs">
+                Phone Number
+              </Label>
+              <Input
+                id="phone"
+                value={personalInfo.phone}
+                onChange={(e) =>
+                  setPersonalInfo((prev) => ({
+                    ...prev,
+                    phone: e.target.value,
+                  }))
+                }
+                placeholder="+1 (555) 123-4567"
+                className="h-8 text-sm"
+              />
+            </div>
+            <div className="field-group">
+              <Label htmlFor="location" className="text-xs">
+                Location
+              </Label>
+              <Input
+                id="location"
+                value={personalInfo.location}
+                onChange={(e) =>
+                  setPersonalInfo((prev) => ({
+                    ...prev,
+                    location: e.target.value,
+                  }))
+                }
+                placeholder="New York, NY"
+                className="h-8 text-sm"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3">
             <div className="field-group">
-              <Label htmlFor="linkedin" className="text-xs">LinkedIn</Label>
+              <Label htmlFor="linkedin" className="text-xs">
+                LinkedIn
+              </Label>
               <Input
                 id="linkedin"
                 value={personalInfo.linkedin}
-                onChange={(e) => setPersonalInfo(prev => ({ ...prev, linkedin: e.target.value }))}
+                onChange={(e) =>
+                  setPersonalInfo((prev) => ({
+                    ...prev,
+                    linkedin: e.target.value,
+                  }))
+                }
                 placeholder="linkedin.com/in/johndoe"
                 className="h-8 text-sm"
               />
             </div>
             <div className="field-group">
-              <Label htmlFor="website" className="text-xs">Portfolio/Website</Label>
+              <Label htmlFor="website" className="text-xs">
+                Portfolio/Website
+              </Label>
               <Input
                 id="website"
                 value={personalInfo.website}
-                onChange={(e) => setPersonalInfo(prev => ({ ...prev, website: e.target.value }))}
+                onChange={(e) =>
+                  setPersonalInfo((prev) => ({
+                    ...prev,
+                    website: e.target.value,
+                  }))
+                }
                 placeholder="johndoe.com"
                 className="h-8 text-sm"
               />
             </div>
           </div>
         </div>
-      )
+      ),
     },
     {
       key: "summary",
@@ -346,7 +413,9 @@ export const ResumeEditor = ({ onDataChange }) => {
         <div className="space-y-3">
           <div className="field-group">
             <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="summary" className="text-xs">Summary</Label>
+              <Label htmlFor="summary" className="text-xs">
+                Summary
+              </Label>
               <div className="flex gap-1">
                 <AIButton onClick={() => handleAIAction("enhance", "summary")}>
                   Enhance
@@ -363,7 +432,7 @@ export const ResumeEditor = ({ onDataChange }) => {
             />
           </div>
         </div>
-      )
+      ),
     },
     {
       key: "experience",
@@ -372,13 +441,20 @@ export const ResumeEditor = ({ onDataChange }) => {
       content: (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-            <p className="text-sm text-muted-foreground">Add your work experience</p>
-            <Button size="sm" variant="outline" onClick={() => openAddModal("experience")} className="gap-2 w-full sm:w-auto">
-              <Plus className="w-4 h-4" />
+            <p className="text-sm text-muted-foreground">
+              Add your work experience
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => openAddModal("experience")}
+              className="gap-1 px-2 py-1 text-sm"
+            >
+              <Plus className="w-3 h-3" />
               Add Experience
             </Button>
           </div>
-          
+
           {experiences.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Briefcase className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -402,7 +478,7 @@ export const ResumeEditor = ({ onDataChange }) => {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => removeItem(exp.id, 'experience')}
+                        onClick={() => removeItem(exp.id, "experience")}
                         className="text-destructive hover:text-destructive h-8 w-8 p-0"
                       >
                         <Trash2 className="w-3 h-3" />
@@ -410,17 +486,32 @@ export const ResumeEditor = ({ onDataChange }) => {
                     </div>
                   </div>
                   <div className="space-y-1 text-xs text-muted-foreground">
-                    <p><span className="font-medium">Job Title:</span> {exp.jobTitle || "Not specified"}</p>
-                    <p><span className="font-medium">Company:</span> {exp.company || "Not specified"}</p>
-                    <p><span className="font-medium">Duration:</span> {exp.startDate || "Not specified"} - {exp.endDate || "Present"}</p>
-                    {exp.description && <p><span className="font-medium">Description:</span> {exp.description}</p>}
+                    <p>
+                      <span className="font-medium">Job Title:</span>{" "}
+                      {exp.jobTitle || "Not specified"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Company:</span>{" "}
+                      {exp.company || "Not specified"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Duration:</span>{" "}
+                      {exp.startDate || "Not specified"} -{" "}
+                      {exp.endDate || "Present"}
+                    </p>
+                    {exp.description && (
+                      <p>
+                        <span className="font-medium">Description:</span>{" "}
+                        {exp.description}
+                      </p>
+                    )}
                   </div>
                 </Card>
               ))}
             </div>
           )}
         </div>
-      )
+      ),
     },
     {
       key: "education",
@@ -430,12 +521,17 @@ export const ResumeEditor = ({ onDataChange }) => {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">Add your education</p>
-            <Button size="sm" variant="outline" onClick={() => openAddModal("education")} className="gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => openAddModal("education")}
+              className="gap-2"
+            >
               <Plus className="w-4 h-4" />
               Add Education
             </Button>
           </div>
-          
+
           {education.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <GraduationCap className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -459,7 +555,7 @@ export const ResumeEditor = ({ onDataChange }) => {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => removeItem(edu.id, 'education')}
+                        onClick={() => removeItem(edu.id, "education")}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -467,17 +563,31 @@ export const ResumeEditor = ({ onDataChange }) => {
                     </div>
                   </div>
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p><span className="font-medium">Degree:</span> {edu.degree || "Not specified"}</p>
-                    <p><span className="font-medium">School:</span> {edu.institution || "Not specified"}</p>
-                    <p><span className="font-medium">Years:</span> {edu.startYear || "Not specified"} - {edu.endYear || "Not specified"}</p>
-                    {edu.gpa && <p><span className="font-medium">GPA:</span> {edu.gpa}</p>}
+                    <p>
+                      <span className="font-medium">Degree:</span>{" "}
+                      {edu.degree || "Not specified"}
+                    </p>
+                    <p>
+                      <span className="font-medium">School:</span>{" "}
+                      {edu.institution || "Not specified"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Years:</span>{" "}
+                      {edu.startYear || "Not specified"} -{" "}
+                      {edu.endYear || "Not specified"}
+                    </p>
+                    {edu.gpa && (
+                      <p>
+                        <span className="font-medium">GPA:</span> {edu.gpa}
+                      </p>
+                    )}
                   </div>
                 </Card>
               ))}
             </div>
           )}
         </div>
-      )
+      ),
     },
     {
       key: "skills",
@@ -488,7 +598,12 @@ export const ResumeEditor = ({ onDataChange }) => {
           <div className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">Add your skills</p>
             <div className="flex flex-col gap-2">
-              <Button size="sm" variant="outline" onClick={() => openAddModal("skill")} className="gap-2 text-xs h-8">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => openAddModal("skill")}
+                className="gap-2 text-xs h-8"
+              >
                 <Plus className="w-3 h-3" />
                 Add Skill
               </Button>
@@ -497,7 +612,7 @@ export const ResumeEditor = ({ onDataChange }) => {
               </AIButton>
             </div>
           </div>
-          
+
           {skills.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Code className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -506,10 +621,15 @@ export const ResumeEditor = ({ onDataChange }) => {
           ) : (
             <div className="flex flex-wrap gap-2">
               {skills.map((skill, index) => (
-                <div key={index} className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded text-sm">
+                <div
+                  key={index}
+                  className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded text-sm"
+                >
                   {skill}
-                  <button 
-                    onClick={() => setSkills(prev => prev.filter((_, i) => i !== index))}
+                  <button
+                    onClick={() =>
+                      setSkills((prev) => prev.filter((_, i) => i !== index))
+                    }
                     className="ml-1 text-muted-foreground hover:text-foreground"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -519,7 +639,7 @@ export const ResumeEditor = ({ onDataChange }) => {
             </div>
           )}
         </div>
-      )
+      ),
     },
     {
       key: "projects",
@@ -529,12 +649,17 @@ export const ResumeEditor = ({ onDataChange }) => {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">Add your projects</p>
-            <Button size="sm" variant="outline" onClick={() => openAddModal("project")} className="gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => openAddModal("project")}
+              className="gap-2"
+            >
               <Plus className="w-4 h-4" />
               Add Project
             </Button>
           </div>
-          
+
           {projects.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <FolderOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -543,7 +668,10 @@ export const ResumeEditor = ({ onDataChange }) => {
           ) : (
             <div className="space-y-4">
               {projects.map((project) => (
-                <Card key={project.id} className="p-4 border-l-4 border-l-primary">
+                <Card
+                  key={project.id}
+                  className="p-4 border-l-4 border-l-primary"
+                >
                   <div className="flex justify-between items-start mb-3">
                     <h4 className="font-medium">Project Entry</h4>
                     <div className="flex gap-2">
@@ -558,7 +686,7 @@ export const ResumeEditor = ({ onDataChange }) => {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => removeItem(project.id, 'project')}
+                        onClick={() => removeItem(project.id, "project")}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -566,17 +694,32 @@ export const ResumeEditor = ({ onDataChange }) => {
                     </div>
                   </div>
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p><span className="font-medium">Project:</span> {project.projectName || "Not specified"}</p>
-                    <p><span className="font-medium">Technologies:</span> {project.technologies || "Not specified"}</p>
-                    <p><span className="font-medium">Duration:</span> {project.startDate || "Not specified"} - {project.endDate || "Not specified"}</p>
-                    {project.projectDescription && <p><span className="font-medium">Description:</span> {project.projectDescription}</p>}
+                    <p>
+                      <span className="font-medium">Project:</span>{" "}
+                      {project.projectName || "Not specified"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Technologies:</span>{" "}
+                      {project.technologies || "Not specified"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Duration:</span>{" "}
+                      {project.startDate || "Not specified"} -{" "}
+                      {project.endDate || "Not specified"}
+                    </p>
+                    {project.projectDescription && (
+                      <p>
+                        <span className="font-medium">Description:</span>{" "}
+                        {project.projectDescription}
+                      </p>
+                    )}
                   </div>
                 </Card>
               ))}
             </div>
           )}
         </div>
-      )
+      ),
     },
     {
       key: "certifications",
@@ -585,13 +728,20 @@ export const ResumeEditor = ({ onDataChange }) => {
       content: (
         <div className="space-y-4">
           <div className="flex flex-col gap-2">
-            <p className="text-sm text-muted-foreground">Add your certifications</p>
-            <Button size="sm" variant="outline" onClick={() => openAddModal("certification")} className="gap-2 text-xs h-8">
+            <p className="text-sm text-muted-foreground">
+              Add your certifications
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => openAddModal("certification")}
+              className="gap-2 text-xs h-8"
+            >
               <Plus className="w-3 h-3" />
               Add Certification
             </Button>
           </div>
-          
+
           {certifications.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Award className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -615,7 +765,7 @@ export const ResumeEditor = ({ onDataChange }) => {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => removeItem(cert.id, 'certification')}
+                        onClick={() => removeItem(cert.id, "certification")}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -623,17 +773,31 @@ export const ResumeEditor = ({ onDataChange }) => {
                     </div>
                   </div>
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p><span className="font-medium">Certification:</span> {cert.certName || "Not specified"}</p>
-                    <p><span className="font-medium">Issuer:</span> {cert.issuingOrg || "Not specified"}</p>
-                    <p><span className="font-medium">Date:</span> {cert.issueDate || "Not specified"}</p>
-                    {cert.credentialId && <p><span className="font-medium">Credential ID:</span> {cert.credentialId}</p>}
+                    <p>
+                      <span className="font-medium">Certification:</span>{" "}
+                      {cert.certName || "Not specified"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Issuer:</span>{" "}
+                      {cert.issuingOrg || "Not specified"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Date:</span>{" "}
+                      {cert.issueDate || "Not specified"}
+                    </p>
+                    {cert.credentialId && (
+                      <p>
+                        <span className="font-medium">Credential ID:</span>{" "}
+                        {cert.credentialId}
+                      </p>
+                    )}
                   </div>
                 </Card>
               ))}
             </div>
           )}
         </div>
-      )
+      ),
     },
   ];
 
@@ -642,7 +806,9 @@ export const ResumeEditor = ({ onDataChange }) => {
       {/* Header */}
       <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border p-4 z-10">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Resume Builder</h2>
+          <h2 className="text-lg font-semibold text-foreground">
+            Resume Builder
+          </h2>
           <Button
             onClick={() => handleAIAction("optimize-all")}
             className="ai-button gap-1 text-xs"
@@ -652,16 +818,18 @@ export const ResumeEditor = ({ onDataChange }) => {
             Optimize
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">Build your professional resume with AI assistance</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Build your professional resume with AI assistance
+        </p>
       </div>
-      
+
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {sections.map((section) => (
           <Collapsible
             key={section.key}
             open={openSections[section.key]}
-            onOpenChange={() => toggleSection(section.key )}
+            onOpenChange={() => toggleSection(section.key)}
           >
             <Card className="bg-card border border-border/30 hover:border-border/60 transition-all">
               <CollapsibleTrigger className="w-full">
@@ -669,11 +837,15 @@ export const ResumeEditor = ({ onDataChange }) => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <section.icon className="w-4 h-4 text-muted-foreground" />
-                      <h3 className="text-sm font-medium text-left">{section.title}</h3>
+                      <h3 className="text-sm font-medium text-left">
+                        {section.title}
+                      </h3>
                     </div>
-                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${
-                      openSections[section.key] ? 'rotate-180' : ''
-                    }`} />
+                    <ChevronDown
+                      className={`w-4 h-4 text-muted-foreground transition-transform ${
+                        openSections[section.key] ? "rotate-180" : ""
+                      }`}
+                    />
                   </div>
                 </CardHeader>
               </CollapsibleTrigger>
@@ -688,50 +860,64 @@ export const ResumeEditor = ({ onDataChange }) => {
         ))}
 
         {/* Custom Fields Section */}
-        {customFields.length > 0 && customFields.map((field) => (
-          <Card key={field.id} className="bg-card border border-border/30 hover:border-border/60 transition-all">
-            <CardHeader className="p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Plus className="w-4 h-4 text-muted-foreground" />
-                  <h3 className="text-sm font-medium">{field.fieldName || "Custom Field"}</h3>
+        {customFields.length > 0 &&
+          customFields.map((field) => (
+            <Card
+              key={field.id}
+              className="bg-card border border-border/30 hover:border-border/60 transition-all"
+            >
+              <CardHeader className="p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Plus className="w-4 h-4 text-muted-foreground" />
+                    <h3 className="text-sm font-medium">
+                      {field.fieldName || "Custom Field"}
+                    </h3>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => openEditModal("custom", field)}
+                      className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
+                    >
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeItem(field.id, "custom")}
+                      className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => openEditModal("custom", field)}
-                    className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
-                  >
-                    <Edit className="w-3 h-3" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => removeItem(field.id, 'custom')}
-                    className="text-destructive hover:text-destructive h-8 w-8 p-0"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
+              </CardHeader>
+              <CardContent className="p-3 pt-0 space-y-2">
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>
+                    <span className="font-medium">Type:</span>{" "}
+                    {field.fieldType || "Text"}
+                  </p>
+                  {field.fieldContent && (
+                    <p>
+                      <span className="font-medium">Content:</span>{" "}
+                      {field.fieldContent}
+                    </p>
+                  )}
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 space-y-2">
-              <div className="text-xs text-muted-foreground space-y-1">
-                <p><span className="font-medium">Type:</span> {field.fieldType || "Text"}</p>
-                {field.fieldContent && <p><span className="font-medium">Content:</span> {field.fieldContent}</p>}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
 
         {/* Add Custom Field Button */}
         <Card className="bg-card border border-border/30">
           <CardContent className="p-3">
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={() => openAddModal("custom")} 
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => openAddModal("custom")}
               className="w-full gap-2 text-xs h-8"
             >
               <Plus className="w-3 h-3" />

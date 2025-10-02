@@ -1,6 +1,7 @@
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 
 const fonts = [
@@ -16,7 +17,20 @@ const fonts = [
   { id: "Lora", label: "Lora", stack: "Lora, Georgia, serif" },
 ];
 
-export const TypographyPanel = ({ fontFamily, onFontFamilyChange, fontSize, onFontSizeChange }) => {
+export const TypographyPanel = ({ 
+  fontFamily, 
+  onFontFamilyChange, 
+  fontSize, 
+  onFontSizeChange,
+  lineHeight,
+  onLineHeightChange,
+  letterSpacing,
+  onLetterSpacingChange,
+  hideIcons,
+  onHideIconsChange,
+  underlineLinks,
+  onUnderlineLinksChange
+}) => {
   return (
     <div className="h-full flex flex-col border-t border-border/50">
       {/* Header */}
@@ -25,7 +39,7 @@ export const TypographyPanel = ({ fontFamily, onFontFamilyChange, fontSize, onFo
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5">
+      <div className="flex-1 p-4 space-y-5">
         <div>
           <Label className="text-xs mb-2 block">Font Family</Label>
           <div className="grid grid-cols-2 gap-2">
@@ -57,6 +71,54 @@ export const TypographyPanel = ({ fontFamily, onFontFamilyChange, fontSize, onFo
               step={1}
               className="flex-1"
               onValueChange={(v) => onFontSizeChange(v[0] ?? 14)}
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-xs mb-2 block">Line Height</Label>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground w-8">{lineHeight}</span>
+            <Slider
+              value={[lineHeight]}
+              min={1.0}
+              max={2.5}
+              step={0.1}
+              className="flex-1"
+              onValueChange={(v) => onLineHeightChange(v[0] ?? 1.5)}
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-xs mb-2 block">Letter Spacing</Label>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground w-8">{letterSpacing}px</span>
+            <Slider
+              value={[letterSpacing]}
+              min={-2}
+              max={5}
+              step={0.1}
+              className="flex-1"
+              onValueChange={(v) => onLetterSpacingChange(v[0] ?? 0)}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Hide Icons</Label>
+            <Switch
+              checked={hideIcons}
+              onCheckedChange={onHideIconsChange}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Underline Links</Label>
+            <Switch
+              checked={underlineLinks}
+              onCheckedChange={onUnderlineLinksChange}
             />
           </div>
         </div>

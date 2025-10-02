@@ -29,7 +29,6 @@ import {
   X,
 } from "lucide-react";
 
-
 const Profile = () => {
   const { user, accessToken, logout, loading } = useAuth();
   const navigate = useNavigate();
@@ -125,11 +124,11 @@ const Profile = () => {
   }, [accessToken, user, loading, navigate]);
 
   // --- Handlers ---
-
   const handleUpdateProfile = async () => {
     try {
       await api.put("/api/v1/profile", {
-        full_name: formData.full_name,
+        name: formData.full_name,
+        username: formData.username,
         job_title: formData.job_title,
         company: formData.company,
         industry: formData.industry,
@@ -237,7 +236,6 @@ const Profile = () => {
   };
 
   // --- UI ---
-
   if (loading || fetching) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -279,7 +277,10 @@ const Profile = () => {
                 <Avatar className="h-24 w-24 mx-auto mb-4">
                   <AvatarImage src={profile?.avatar_url || undefined} />
                   <AvatarFallback className="bg-primary/10 text-primary text-lg">
-                    {profile?.full_name?.split(" ").map((n) => n[0]).join("") ||
+                    {profile?.full_name
+                      ?.split(" ")
+                      .map((n) => n[0])
+                      .join("") ||
                       user?.email?.charAt(0).toUpperCase() ||
                       "U"}
                   </AvatarFallback>
@@ -295,7 +296,8 @@ const Profile = () => {
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  Member since {new Date(profile?.createdAt).toLocaleDateString()}
+                  Member since{" "}
+                  {new Date(profile?.createdAt).toLocaleDateString()}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <FileText className="h-4 w-4" />
@@ -328,11 +330,17 @@ const Profile = () => {
           <div className="lg:col-span-2">
             <Tabs defaultValue="profile" className="space-y-6">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="profile" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="profile"
+                  className="flex items-center gap-2"
+                >
                   <UserIcon className="h-4 w-4" />
                   Profile Settings
                 </TabsTrigger>
-                <TabsTrigger value="projects" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="projects"
+                  className="flex items-center gap-2"
+                >
                   <FileText className="h-4 w-4" />
                   My Projects
                 </TabsTrigger>
@@ -364,7 +372,9 @@ const Profile = () => {
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium">Full Name</label>
+                          <label className="text-sm font-medium">
+                            Full Name
+                          </label>
                           {editingProfile ? (
                             <Input
                               value={formData.full_name}
@@ -383,16 +393,33 @@ const Profile = () => {
                           )}
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Username</label>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {profile?.username || "Not set"}
-                          </p>
+                          <label className="text-sm font-medium">
+                            Username
+                          </label>
+                          {editingProfile ? (
+                            <Input
+                              value={formData.username}
+                              onChange={(e) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  username: e.target.value,
+                                }))
+                              }
+                              placeholder="Enter your username"
+                            />
+                          ) : (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {profile?.username || "Not set"}
+                            </p>
+                          )}
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium">Job Title</label>
+                          <label className="text-sm font-medium">
+                            Job Title
+                          </label>
                           {editingProfile ? (
                             <Input
                               value={formData.job_title}
@@ -433,7 +460,9 @@ const Profile = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium">Industry</label>
+                          <label className="text-sm font-medium">
+                            Industry
+                          </label>
                           {editingProfile ? (
                             <Input
                               value={formData.industry}
@@ -452,7 +481,9 @@ const Profile = () => {
                           )}
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Career Level</label>
+                          <label className="text-sm font-medium">
+                            Career Level
+                          </label>
                           {editingProfile ? (
                             <select
                               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -482,7 +513,9 @@ const Profile = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium">Phone Number</label>
+                          <label className="text-sm font-medium">
+                            Phone Number
+                          </label>
                           {editingProfile ? (
                             <Input
                               value={formData.phone_number}
@@ -501,7 +534,9 @@ const Profile = () => {
                           )}
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Location</label>
+                          <label className="text-sm font-medium">
+                            Location
+                          </label>
                           {editingProfile ? (
                             <Input
                               value={formData.location}
@@ -523,7 +558,9 @@ const Profile = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium">Years of Experience</label>
+                          <label className="text-sm font-medium">
+                            Years of Experience
+                          </label>
                           {editingProfile ? (
                             <Input
                               type="number"
@@ -547,7 +584,9 @@ const Profile = () => {
                           )}
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Website/Portfolio</label>
+                          <label className="text-sm font-medium">
+                            Website/Portfolio
+                          </label>
                           {editingProfile ? (
                             <Input
                               value={formData.website_url}
@@ -569,7 +608,9 @@ const Profile = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium">LinkedIn URL</label>
+                          <label className="text-sm font-medium">
+                            LinkedIn URL
+                          </label>
                           {editingProfile ? (
                             <Input
                               value={formData.linkedin_url}
@@ -588,7 +629,9 @@ const Profile = () => {
                           )}
                         </div>
                         <div>
-                          <label className="text-sm font-medium">GitHub URL</label>
+                          <label className="text-sm font-medium">
+                            GitHub URL
+                          </label>
                           {editingProfile ? (
                             <Input
                               value={formData.github_url}
@@ -609,7 +652,9 @@ const Profile = () => {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium">Professional Summary</label>
+                        <label className="text-sm font-medium">
+                          Professional Summary
+                        </label>
                         {editingProfile ? (
                           <textarea
                             className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -697,7 +742,9 @@ const Profile = () => {
                   {editingPassword && (
                     <CardContent className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium">New Password</label>
+                        <label className="text-sm font-medium">
+                          New Password
+                        </label>
                         <Input
                           type="password"
                           value={formData.newPassword}
@@ -767,7 +814,9 @@ const Profile = () => {
                     {projects.length === 0 ? (
                       <div className="text-center py-8">
                         <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">No projects found</p>
+                        <p className="text-muted-foreground">
+                          No projects found
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           Start creating resumes to see them here
                         </p>
@@ -780,7 +829,9 @@ const Profile = () => {
                             className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                           >
                             <div className="flex-1">
-                              <h3 className="font-medium">{project.project_name}</h3>
+                              <h3 className="font-medium">
+                                {project.project_name}
+                              </h3>
                               <div className="flex items-center gap-4 mt-1">
                                 {project.template_type && (
                                   <Badge variant="secondary">
@@ -789,7 +840,9 @@ const Profile = () => {
                                 )}
                                 <span className="text-sm text-muted-foreground">
                                   Created{" "}
-                                  {new Date(project.created_at).toLocaleDateString()}
+                                  {new Date(
+                                    project.created_at
+                                  ).toLocaleDateString()}
                                 </span>
                               </div>
                             </div>

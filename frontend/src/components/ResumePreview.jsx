@@ -1,8 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ZoomIn, ZoomOut, Undo, Redo } from "lucide-react";
+import { ZoomIn, ZoomOut, Undo, Redo, RotateCcw, Hand } from "lucide-react";
 import { useState } from "react";
+
 
 const ModernTemplate = ({ data, primaryColor, backgroundColor, textColor }) => (
   <div className="p-8 max-w-4xl mx-auto shadow-lg rounded-lg" style={{ backgroundColor: backgroundColor || undefined, color: textColor || undefined }}>
@@ -152,16 +153,21 @@ export const ResumePreview = ({
   primaryColor, 
   backgroundColor, 
   textColor, 
-  lineHeight, 
+  lineHeight,
+  letterSpacing,
+  hideIcons,
+  underlineLinks,
   onUndo, 
   onRedo, 
   canUndo = false, 
   canRedo = false 
 }) => {
   const [zoom, setZoom] = useState(1);
+  const [isPanning, setIsPanning] = useState(false);
 
   const handleZoomIn = () => setZoom((z) => Math.min(1.6, parseFloat((z + 0.1).toFixed(2))));
   const handleZoomOut = () => setZoom((z) => Math.max(0.6, parseFloat((z - 0.1).toFixed(2))));
+  const handleResetZoom = () => setZoom(1);
   
   const handleUndo = () => {
     onUndo?.();
@@ -217,16 +223,37 @@ export const ResumePreview = ({
             <Button variant="outline" size="sm" onClick={handleZoomIn} aria-label="Zoom in">
               <ZoomIn className="w-4 h-4" />
             </Button>
+            <Button variant="outline" size="sm" onClick={handleResetZoom} aria-label="Reset zoom">
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+            <div className="w-px h-4 bg-border mx-1" />
+            <Button 
+              variant={isPanning ? "default" : "outline"} 
+              size="sm" 
+              onClick={() => setIsPanning(!isPanning)} 
+              aria-label="Toggle scroll to pan"
+            >
+              <Hand className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 sm:p-4 overflow-auto h-[calc(100vh-160px)] sm:h-[calc(100vh-200px)]">
+      <div 
+        className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-2 sm:p-4 overflow-auto h-[calc(100vh-160px)] sm:h-[calc(100vh-200px)] ${isPanning ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      >
         <div className="flex justify-center min-w-0">
           <Card className="shadow-2xl w-full max-w-4xl overflow-hidden">
             <div
               className="origin-top transition-transform"
-              style={{ transform: `scale(${zoom})`, fontFamily: fontFamily, fontSize: fontSize ? `${fontSize}px` : undefined, lineHeight: lineHeight ? `${lineHeight}` : undefined, color: textColor }}
+              style={{ 
+                transform: `scale(${zoom})`, 
+                fontFamily: fontFamily, 
+                fontSize: fontSize ? `${fontSize}px` : undefined, 
+                lineHeight: lineHeight ? `${lineHeight}` : undefined, 
+                letterSpacing: letterSpacing ? `${letterSpacing}px` : undefined,
+                color: textColor 
+              }}
             >
               {renderTemplate()}
             </div>

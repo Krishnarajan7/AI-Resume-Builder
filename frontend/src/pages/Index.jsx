@@ -5,6 +5,8 @@ import { TemplateSelector } from "@/components/TemplateSelector";
 import { TypographyPanel } from "@/components/TypographyPanel";
 import { LayoutPanel } from "@/components/LayoutPanel";
 import { ThemePanel } from "@/components/ThemePanel";
+import { ExportPanel } from "@/components/ExportPanel";
+import { NotesPanel } from "@/components/NotesPanel";
 import { MobileNavigation } from "@/components/MobileNavigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,9 @@ const Index = () => {
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [textColor, setTextColor] = useState("#000000");
   const [lineHeight, setLineHeight] = useState(1.5);
+  const [letterSpacing, setLetterSpacing] = useState(0);
+  const [hideIcons, setHideIcons] = useState(false);
+  const [underlineLinks, setUnderlineLinks] = useState(false);
   
   // History for undo/redo
   const [history, setHistory] = useState([resumeData]);
@@ -127,6 +132,9 @@ const Index = () => {
               backgroundColor={backgroundColor}
               textColor={textColor}
               lineHeight={lineHeight}
+              letterSpacing={letterSpacing}
+              hideIcons={hideIcons}
+              underlineLinks={underlineLinks}
               onUndo={handleUndo}
               onRedo={handleRedo}
               canUndo={historyIndex > 0}
@@ -163,17 +171,25 @@ const Index = () => {
                     onFontFamilyChange={setFontFamily}
                     fontSize={fontSize}
                     onFontSizeChange={setFontSize}
+                    lineHeight={lineHeight}
+                    onLineHeightChange={setLineHeight}
+                    letterSpacing={letterSpacing}
+                    onLetterSpacingChange={setLetterSpacing}
+                    hideIcons={hideIcons}
+                    onHideIconsChange={setHideIcons}
+                    underlineLinks={underlineLinks}
+                    onUnderlineLinksChange={setUnderlineLinks}
                   />
                   <ThemePanel 
                     primaryColor={primaryColor}
                     backgroundColor={backgroundColor}
                     textColor={textColor}
-                    lineHeight={lineHeight}
                     onPrimaryColorChange={setPrimaryColor}
                     onBackgroundColorChange={setBackgroundColor}
                     onTextColorChange={setTextColor}
-                    onLineHeightChange={setLineHeight}
                   />
+                  <ExportPanel />
+                  <NotesPanel />
                 </TabsContent>
               </div>
             </Tabs>
@@ -199,6 +215,9 @@ const Index = () => {
                 backgroundColor={backgroundColor}
                 textColor={textColor}
                 lineHeight={lineHeight}
+                letterSpacing={letterSpacing}
+                hideIcons={hideIcons}
+                underlineLinks={underlineLinks}
                 onUndo={handleUndo}
                 onRedo={handleRedo}
                 canUndo={historyIndex > 0}
@@ -235,17 +254,25 @@ const Index = () => {
                     onFontFamilyChange={setFontFamily}
                     fontSize={fontSize}
                     onFontSizeChange={setFontSize}
+                    lineHeight={lineHeight}
+                    onLineHeightChange={setLineHeight}
+                    letterSpacing={letterSpacing}
+                    onLetterSpacingChange={setLetterSpacing}
+                    hideIcons={hideIcons}
+                    onHideIconsChange={setHideIcons}
+                    underlineLinks={underlineLinks}
+                    onUnderlineLinksChange={setUnderlineLinks}
                   />
                   <ThemePanel 
                     primaryColor={primaryColor}
                     backgroundColor={backgroundColor}
                     textColor={textColor}
-                    lineHeight={lineHeight}
                     onPrimaryColorChange={setPrimaryColor}
                     onBackgroundColorChange={setBackgroundColor}
                     onTextColorChange={setTextColor}
-                    onLineHeightChange={setLineHeight}
                   />
+                  <ExportPanel />
+                  <NotesPanel />
                 </TabsContent>
               </Tabs>
             </div>

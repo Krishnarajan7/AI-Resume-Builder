@@ -17,21 +17,18 @@ export const ThemePanel = ({
   primaryColor = "#2563eb",
   backgroundColor = "#ffffff",
   textColor = "#000000",
-  lineHeight = 1.5,
   onPrimaryColorChange,
   onBackgroundColorChange,
-  onTextColorChange,
-  onLineHeightChange
+  onTextColorChange
 }) => {
   const [borderRadius, setBorderRadius] = useState(8);
-  const [letterSpacing, setLetterSpacing] = useState(0);
   const [customCSS, setCustomCSS] = useState("* {\n  outline: 1px solid #000;\n  outline-offset: 4px;\n}");
   const [applyCustomCSS, setApplyCustomCSS] = useState(false);
 
   return (
-    <div className="h-full flex flex-col border-t border-border/50">
+    <div className="border-t border-border/50">
       {/* Header */}
-      <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border p-3 z-10">
+      <div className="bg-card/95 backdrop-blur-sm border-b border-border p-3">
         <div className="flex items-center gap-2">
           <Palette className="w-4 h-4 text-muted-foreground" />
           <h2 className="text-sm font-medium text-foreground">Theme</h2>
@@ -39,10 +36,10 @@ export const ThemePanel = ({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-4">
+      <div className="p-3 space-y-3">
         {/* Color Palette */}
         <div>
-          <div className="grid grid-cols-9 gap-1.5 mb-4">
+          <div className="grid grid-cols-9 gap-1.5 mb-3">
             {colorOptions.map((color) => (
               <button
                 key={color}
@@ -58,17 +55,17 @@ export const ThemePanel = ({
 
         {/* Primary Color */}
         <div>
-          <Label className="text-xs font-medium mb-2 block text-foreground">Primary Color</Label>
-          <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-md border">
+          <Label className="text-xs font-medium mb-1.5 block text-foreground">Primary Color</Label>
+          <div className="flex items-center gap-2 p-1.5 bg-muted/30 rounded-md border">
             <div
-              className="w-6 h-6 rounded border"
+              className="w-5 h-5 rounded border"
               style={{ backgroundColor: primaryColor }}
             />
             <input
               type="text"
               value={primaryColor}
               onChange={(e) => onPrimaryColorChange?.(e.target.value)}
-              className="flex-1 bg-transparent text-xs font-mono outline-none"
+              className="flex-1 bg-transparent text-[10px] font-mono outline-none"
               placeholder="#000000"
             />
           </div>
@@ -76,17 +73,17 @@ export const ThemePanel = ({
 
         {/* Background Color */}
         <div>
-          <Label className="text-xs font-medium mb-2 block text-foreground">Background Color</Label>
-          <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-md border">
+          <Label className="text-xs font-medium mb-1.5 block text-foreground">Background Color</Label>
+          <div className="flex items-center gap-2 p-1.5 bg-muted/30 rounded-md border">
             <div
-              className="w-6 h-6 rounded border"
+              className="w-5 h-5 rounded border"
               style={{ backgroundColor: backgroundColor }}
             />
             <input
               type="text"
               value={backgroundColor}
               onChange={(e) => onBackgroundColorChange?.(e.target.value)}
-              className="flex-1 bg-transparent text-xs font-mono outline-none"
+              className="flex-1 bg-transparent text-[10px] font-mono outline-none"
               placeholder="#ffffff"
             />
           </div>
@@ -94,59 +91,27 @@ export const ThemePanel = ({
 
         {/* Text Color */}
         <div>
-          <Label className="text-xs font-medium mb-2 block text-foreground">Text Color</Label>
-          <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-md border">
+          <Label className="text-xs font-medium mb-1.5 block text-foreground">Text Color</Label>
+          <div className="flex items-center gap-2 p-1.5 bg-muted/30 rounded-md border">
             <div
-              className="w-6 h-6 rounded border"
+              className="w-5 h-5 rounded border"
               style={{ backgroundColor: textColor }}
             />
             <input
               type="text"
               value={textColor}
               onChange={(e) => onTextColorChange?.(e.target.value)}
-              className="flex-1 bg-transparent text-xs font-mono outline-none"
+              className="flex-1 bg-transparent text-[10px] font-mono outline-none"
               placeholder="#000000"
-            />
-          </div>
-        </div>
-
-        {/* Line Height */}
-        <div>
-          <Label className="text-xs font-medium mb-2 block text-foreground">Line Height</Label>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground w-8">{lineHeight}</span>
-            <Slider
-              value={[lineHeight]}
-              min={1.0}
-              max={2.5}
-              step={0.1}
-              className="flex-1"
-              onValueChange={(v) => onLineHeightChange?.(v[0] ?? 1.5)}
-            />
-          </div>
-        </div>
-
-        {/* Letter Spacing */}
-        <div>
-          <Label className="text-xs font-medium mb-2 block text-foreground">Letter Spacing</Label>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground w-8">{letterSpacing}px</span>
-            <Slider
-              value={[letterSpacing]}
-              min={-2}
-              max={5}
-              step={0.1}
-              className="flex-1"
-              onValueChange={(v) => setLetterSpacing(v[0] ?? 0)}
             />
           </div>
         </div>
 
         {/* Border Radius */}
         <div>
-          <Label className="text-xs font-medium mb-2 block text-foreground">Border Radius</Label>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground w-8">{borderRadius}px</span>
+          <Label className="text-xs font-medium mb-1.5 block text-foreground">Border Radius</Label>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground w-7">{borderRadius}px</span>
             <Slider
               value={[borderRadius]}
               min={0}
@@ -176,28 +141,28 @@ export const ThemePanel = ({
           <Textarea
             value={customCSS}
             onChange={(e) => setCustomCSS(e.target.value)}
-            className="min-h-[80px] text-xs font-mono bg-muted/50 border"
+            className="min-h-[60px] text-[10px] font-mono bg-muted/50 border resize-none"
             placeholder="Enter custom CSS..."
           />
         </div>
 
         {/* Page Settings */}
-        <div className="border-t pt-4">
-          <Label className="text-xs font-medium mb-3 block text-foreground">Page</Label>
+        <div className="border-t pt-3">
+          <Label className="text-xs font-medium mb-2 block text-foreground">Page</Label>
           
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Show Page Margins</span>
+              <span className="text-[10px] text-muted-foreground">Show Page Margins</span>
               <Switch defaultChecked />
             </div>
             
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Show Grid</span>
+              <span className="text-[10px] text-muted-foreground">Show Grid</span>
               <Switch />
             </div>
             
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">A4 Page Size</span>
+              <span className="text-[10px] text-muted-foreground">A4 Page Size</span>
               <Switch defaultChecked />
             </div>
           </div>
