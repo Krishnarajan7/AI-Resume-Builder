@@ -31,6 +31,20 @@ model User {
   updatedAt       DateTime       @updatedAt
   emailVerified   DateTime?
 
+  // -------------------- Profile Fields --------------------
+  job_title             String?
+  company               String?
+  industry              String?
+  phone_number          String?
+  location              String?
+  website_url           String?
+  linkedin_url          String?
+  github_url            String?
+  professional_summary  String?
+  years_experience      Int?
+  career_level          String?
+  avatar_url            String?
+
   // Relations
   authProviders   AuthProvider[]
   sessions        Session[]

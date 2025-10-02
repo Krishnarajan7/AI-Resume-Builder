@@ -8,10 +8,27 @@ export const getProfile = async (req, res) => {
       where: { id: req.user.id },
       select: {
         id: true,
-        username: true,      
-        name: true,          
+        username: true,
+        name: true,
         email: true,
+        role: true,
         createdAt: true,
+        updatedAt: true,
+        emailVerified: true,
+
+        // Extended profile fields
+        job_title: true,
+        company: true,
+        industry: true,
+        phone_number: true,
+        location: true,
+        website_url: true,
+        linkedin_url: true,
+        github_url: true,
+        professional_summary: true,
+        years_experience: true,
+        career_level: true,
+        avatar_url: true,
       },
     });
 
@@ -19,36 +36,79 @@ export const getProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json(user);
+    // Map `name` to `full_name` for frontend
+    res.json({
+      ...user,
+      full_name: user.name,
+    });
   } catch (err) {
     console.error("Get profile error:", err);
     res.status(500).json({ message: "Server error fetching profile" });
   }
 };
 
-/* Update user's profile (name)
-   Username is read-only */
+/* Update user's profile
+   (email + username = read-only) */
 export const updateProfile = async (req, res) => {
   try {
-    const { full_name } = req.body;
+    const {
+      name,
+      job_title,
+      company,
+      industry,
+      phone_number,
+      location,
+      website_url,
+      linkedin_url,
+      github_url,
+      professional_summary,
+      years_experience,
+      career_level,
+      avatar_url,
+    } = req.body;
 
-    if (!full_name || full_name.trim() === "") {
-      return res.status(400).json({ message: "Full name is required" });
-    }
-
-    const user = await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: req.user.id },
-      data: { name: full_name.trim() },
+      data: {
+        name,
+        job_title,
+        company,
+        industry,
+        phone_number,
+        location,
+        website_url,
+        linkedin_url,
+        github_url,
+        professional_summary,
+        years_experience,
+        career_level,
+        avatar_url,
+      },
       select: {
         id: true,
         username: true,
         name: true,
         email: true,
+        role: true,
         createdAt: true,
+        updatedAt: true,
+
+        // Return profile fields
+        job_title: true,
+        company: true,
+        industry: true,
+        phone_number: true,
+        location: true,
+        website_url: true,
+        linkedin_url: true,
+        github_url: true,
+        professional_summary: true,
+        years_experience: true,
+        career_level: true,
+        avatar_url: true,
       },
     });
-
-    res.json({ message: "Profile updated successfully", user });
+    res.json({ message: "Profile updated successfully", user: { ...updatedUser, full_name: updatedUser.name } });
   } catch (err) {
     console.error("Update profile error:", err);
     res.status(500).json({ message: "Server error updating profile" });
@@ -58,17 +118,7 @@ export const updateProfile = async (req, res) => {
 /* Update user's password */
 export const updatePassword = async (req, res) => {
   try {
-    const { newPassword, confirmPassword } = req.body;
-
-    if (!newPassword || newPassword.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters" });
-    }
-
-    if (newPassword !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match" });
-    }
+    const { newPassword } = req.body;
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
